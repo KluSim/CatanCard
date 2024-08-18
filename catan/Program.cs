@@ -1,5 +1,4 @@
-﻿
-namespace catan{
+﻿namespace catan{
 
     enum RessourceCard
     {
@@ -120,6 +119,7 @@ namespace catan{
             return true;
         }
         
+        //TODO: trade amnts, stealing, expansions, expansion effects, city effects, main game loop
     }
 
 internal class Program
