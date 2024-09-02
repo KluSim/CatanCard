@@ -1,5 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
+using System.Text.Json;
+using System.Text.Encodings;
+using System.Text;
 
 namespace catan{
 
@@ -268,6 +273,9 @@ namespace catan{
 
         public ServerState(){
             players = new List<PlayerState>();
+
+            clients = new Dictionary<NetworkStream, int>();
+            clients2 = new Dictionary<int, NetworkStream>();
         }
 
         public void init(int numberOfPlayers){
@@ -305,13 +313,113 @@ namespace catan{
                 if(currentTurnPlayer >= players.Count) currentTurnPlayer = 0;
             }
         }
+
+        Dictionary<NetworkStream, int> clients;
+        Dictionary<int, NetworkStream> clients2;
+        int clientCnt = 0;
+        public int connectant(NetworkStream stream){
+            if(clients.ContainsKey(stream)){
+                Console.WriteLine("Returning connection, but no user id, dafuq");//TODO handle that
+            }
+            else{
+                clients[stream] = clientCnt;
+                clients2[clientCnt] = stream;
+                stream.WriteAsync(Encoding.ASCII.GetBytes("{\"kind\":\"init\",\"user_id\":\""+clientCnt+"\"}"));
+                clientCnt++;
+            }
+            return clients[stream];
+        }
+
+        //Client tells us smth
+        public void inform(Message msg){
+            Console.WriteLine(msg.user_id+": "+msg.msg);
+            clients2[msg.user_id.Value].WriteAsync(Encoding.ASCII.GetBytes("{\"kind\":\"banana\"}"));
+        }
     }
 
-internal class Program
-{
-    private static void Main(string[] args)
-    {
-        Console.WriteLine("Hello, World!");
+class MessageDecode{
+        public string id{get; set;}
+        public string msg{get; set;}
+        public string? user_id{get; set;}
     }
-}
+
+    class Message{
+        public int id;
+        public string msg;
+        public int? user_id;
+        public Message(MessageDecode md){
+            id = Int32.Parse(md.id);
+            user_id = md.user_id != null ? Int32.Parse(md.user_id) : null;
+            msg = md.msg;
+        }
+    }
+    class TCPConnector
+    {
+        static TcpListener server;
+        static Dictionary<int, ServerState> gameInstances;
+        static void Main(string[] args)
+        {
+            gameInstances = new Dictionary<int, ServerState>();
+            server = new TcpListener(IPAddress.Any, 8052);
+                server.Start();
+            server.BeginAcceptTcpClient(handle_connection, server);
+            while (true)
+            {
+                string inpt = Console.ReadLine() ?? "";
+                if (inpt.Equals("exit"))
+                {
+                    break;
+                }
+            }
+        }
+
+        //the parameter is a delegate, used to communicate between threads. no idea lol
+        static private void handle_connection(IAsyncResult result)  
+        {
+            try
+            {
+                TcpClient socketConnection = server.EndAcceptTcpClient(result);  //creates the TcpClient
+                server.BeginAcceptTcpClient(handle_connection, server); //reopen for new connections
+
+                Byte[] bytes = new Byte[65535];
+                while (true)
+                {
+                    // Get a stream object for reading 				
+                    using (NetworkStream stream = socketConnection.GetStream())
+                    {
+                        int length;
+                        // Read incomming stream into byte arrary. BLOCKING!!			
+                        while ((length = stream.Read(bytes, 0, bytes.Length)) != 0)
+                        {
+                            var incommingData = new byte[length];
+                            Array.Copy(bytes, 0, incommingData, 0, length);
+                            // Convert byte array to string message. 						
+                            string serverMessage = Encoding.ASCII.GetString(incommingData);
+                            Console.WriteLine("client message received as: " + serverMessage);
+                            MessageDecode? deJsoned = JsonSerializer.Deserialize<MessageDecode>(serverMessage);
+                            if(deJsoned == null) continue;
+                            Message decoded = new Message(deJsoned);
+                            if(!gameInstances.ContainsKey(decoded.id)){
+                                gameInstances[decoded.id] = new ServerState();
+                            }
+                            ServerState thisgame = gameInstances[decoded.id];
+                            if(decoded.user_id == null)
+                                thisgame.connectant(stream);
+                            else
+                                thisgame.inform(decoded);
+                        }  
+                    }
+                }
+            }
+            catch (SocketException socketException)
+            {
+                Console.WriteLine("Socket exception: " + socketException);
+            }
+            catch (InvalidOperationException disconnect)
+            {
+                Console.WriteLine("Disconnect?? : " + disconnect);
+            }
+        }
+
+    }
 }
