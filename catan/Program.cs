@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.Encodings;
 using System.Text;
+using System.Net.NetworkInformation;
 
 namespace catan{
 
@@ -12,13 +14,66 @@ namespace catan{
     {
         Wheat, Iron, Sheep, Clay, Wood
     }
-    
+    class RessourceCardMths{
+        static public string toString(RessourceCard rc){
+            switch(rc){
+                case RessourceCard.Wheat:
+                    return "Wheat";
+                case RessourceCard.Iron:
+                    return "Iron";
+                case RessourceCard.Wood:
+                    return "Wood";
+                case RessourceCard.Sheep:
+                    return "Sheep";
+                case RessourceCard.Clay:
+                    return "Clay";
+            }
+            return "";
+        }
+    }
     enum BuildingCard{
         Village, City, Knight, Expansion, Street
     }
 
+    class BuildingCardMths {
+        public static string toString(BuildingCard b){
+            switch(b){
+                case BuildingCard.Village:
+                    return "Village";
+                case BuildingCard.City:
+                    return "City";
+                case BuildingCard.Knight:
+                    return "Knight";
+                case BuildingCard.Expansion:
+                    return "Expansion";
+                case BuildingCard.Street:
+                    return "Street";
+            }
+            return "";
+        }
+    }
+
     enum CityExpansion {
-        Library, TradersGuild, Chruch, CityHall, Castle, University
+        Library, TradersGuild, Church, CityHall, Castle, University
+    }
+    class CityExpansionMths{
+        public static string toString(CityExpansion ce){
+            switch(ce){
+                case CityExpansion.Library:
+                    return "Library";
+                case CityExpansion.TradersGuild:
+                    return "TradersGuild";
+                case CityExpansion.Church:
+                    return "Church";
+                case CityExpansion.CityHall:
+                    return "CityHall";
+                case CityExpansion.Castle:
+                    return "Castle";
+                case CityExpansion.University:
+                    return "University";
+            }
+            return "";
+        }
     }
 
     class CardCosts{
@@ -47,7 +102,7 @@ namespace catan{
 
     class RessourceCardAmnts{
         
-        public int wheat, iron, sheep, wood, clay; //todo ersätzen durch dick
+        public int wheat, iron, sheep, wood, clay; // durch dick ersetzt
         public int total{
             get {
                 return wheat+iron+sheep+clay+wood;
@@ -106,6 +161,11 @@ namespace catan{
 
     class ExpansionCardAmnts{
         public int library, tradersGuild, church, cityHall, castle, university;
+        public int total{
+            get {
+                return library+tradersGuild+church+cityHall+castle+university;
+            }
+        }
 
         public ExpansionCardAmnts(int li, int tr, int ch, int ci, int ca, int un) {
             library = li; tradersGuild = tr; church = ch; cityHall = ci; castle = ca; university = un;
@@ -115,7 +175,7 @@ namespace catan{
             switch(ex) {
                 case CityExpansion.Library: return ref library;
                 case CityExpansion.TradersGuild: return ref tradersGuild;
-                case CityExpansion.Chruch: return ref church;
+                case CityExpansion.Church: return ref church;
                 case CityExpansion.CityHall: return ref cityHall;
                 case CityExpansion.Castle: return ref castle;
                 case CityExpansion.University: return ref university;
@@ -127,7 +187,11 @@ namespace catan{
 
     class BuildingCardAmnts{
         public int village, city, knight, expansion, street;
-
+        public int total{
+            get {
+                return village+city+knight+expansion+street;
+            }
+        }
         public BuildingCardAmnts(int v, int c, int k, int e, int s){
             village = v; city = c; knight = k; expansion = e; street = s;
         }
@@ -146,18 +210,23 @@ namespace catan{
         int victoryPoints;
         RessourceCardAmnts resCards;
         BuildingCardAmnts buildingCards;
-
         ExpansionCardAmnts expansionCards;
-
         Dictionary<BuildingCard, bool> canBuild;
+        public NetworkStream stream;
 
-        public PlayerState(int playerID){
+        public PlayerState(int playerID, NetworkStream ns){
+            this.stream = ns;
             this.playerID = playerID;
-            resCards = new RessourceCardAmnts();
+            //resCards = new RessourceCardAmnts();
             buildingCards = new BuildingCardAmnts(1,0,0,0,1);
             expansionCards = new ExpansionCardAmnts(0,0,0,0,0,0);
             canBuild = new Dictionary<BuildingCard, bool>();
             foreach(BuildingCard b in Enum.GetValues(typeof(BuildingCard))) canBuild.Add(b, true);
+        }
+
+        public void init(RessourceCardAmnts initCards){
+            resCards = initCards;
+            startTurn();
         }
 
         public bool canBuyBuilding(BuildingCard bc, RessourceCardAmnts proposedResources, CityExpansion? proposedExpansion){
@@ -208,11 +277,11 @@ namespace catan{
             return true;
         }
 
-        public bool buyBuilding(BuildingCard bc, RessourceCardAmnts proposedResources, CityExpansion proposedExpansion){
+        public bool buyBuilding(BuildingCard bc, RessourceCardAmnts proposedResources, CityExpansion? proposedExpansion){
             if(!canBuyBuilding(bc, proposedResources, proposedExpansion)) return false;
             resCards.subtract(proposedResources);
             buildingCards.correspondingAmnt(bc)++;
-            if(bc == BuildingCard.Expansion) expansionCards.correspondingAmnt(proposedExpansion)++;
+            if(bc == BuildingCard.Expansion) expansionCards.correspondingAmnt(proposedExpansion.Value)++;
             canBuild[bc] = false;
 
             switch(bc){
@@ -257,11 +326,27 @@ namespace catan{
             else return 2 + (buildingCards.knight+1)/2;
         }
         
+        public RessourceCardAmnts getRes() { return resCards; }
+
+        public BuildingCardAmnts getBuildings() {return buildingCards; }
+
+        public ExpansionCardAmnts getExpansions() {return expansionCards; }
         //TODO: trade amnts, stealing, expansion effects, city effects, main game loop
     }
 
+    class Schriftrolle{
+        public string[] markt {get; set;}
+        public string destiny {get; set;}
+        public string[] expansions {get; set;}
+        public string[] leftBuys {get; set;}//list of ints
+        public string[] yourRes {get; set;}
+        public string[] yourBuildings {get; set;}
+    }
+
     class ServerState {
+        string[] adminCommands = {"StartGame"};
         List<PlayerState> players;
+        int numberOfPlayers = 0;
         int currentTurnPlayer;
 
         RessourceCardAmnts drawPile;
@@ -273,15 +358,61 @@ namespace catan{
 
         public ServerState(){
             players = new List<PlayerState>();
-
-            clients = new Dictionary<NetworkStream, int>();
-            clients2 = new Dictionary<int, NetworkStream>();
         }
 
-        public void init(int numberOfPlayers){
-            players.Clear();
-            if(numberOfPlayers < 2 && numberOfPlayers > 4) Console.WriteLine("replace me with actual error handling. if you read this, haha your code does the big stupid");
-            for(int i = 0; i < numberOfPlayers; ++i) players.Add(new PlayerState(i));
+        public Schriftrolle stateToSend(int player){
+            Schriftrolle sr = new Schriftrolle();
+            sr.markt = new string[5];
+            int marktcnt = 0;
+            foreach(RessourceCard r in Enum.GetValues(typeof(RessourceCard))) {
+                sr.markt[marktcnt] = market.correspondingAmnt(r).ToString();
+                marktcnt++;
+            }
+
+            sr.destiny = CardOfFate ? "Clock" : "Counterclock";
+
+            sr.expansions = new string[6];
+            int expcnt = 0;
+            foreach(CityExpansion r in Enum.GetValues(typeof(CityExpansion))) {
+                sr.expansions[expcnt] = expansionPile.correspondingAmnt(r).ToString();
+                expcnt++;
+            }
+
+            sr.leftBuys = new string[4];
+            int buycnt = 0;
+            foreach(BuildingCard r in Enum.GetValues(typeof(BuildingCard))) {
+                    if(r == BuildingCard.Expansion) continue;
+                    sr.leftBuys[buycnt] = buildingPile.correspondingAmnt(r).ToString();
+                    buycnt++;
+            }
+
+            RessourceCardAmnts playerRes = players[player].getRes(); 
+            sr.yourRes = new string[5];
+            int playerrescnt = 0;
+            foreach(RessourceCard r in Enum.GetValues(typeof(RessourceCard))) {
+                sr.yourRes[playerrescnt] = playerRes.correspondingAmnt(r).ToString();
+                playerrescnt++;
+            }
+
+            BuildingCardAmnts playerBuilds = players[player].getBuildings();
+            ExpansionCardAmnts playerExpansions = players[player].getExpansions();
+            sr.yourBuildings = new string[playerBuilds.total];
+            int playerbuildcnt = 0;
+            foreach(BuildingCard r in Enum.GetValues(typeof(BuildingCard))) {
+                if(r == BuildingCard.Expansion){
+                    foreach(CityExpansion e in Enum.GetValues(typeof(CityExpansion))){
+                        if(playerExpansions.correspondingAmnt(e) == 0) continue;
+                        sr.yourBuildings[playerbuildcnt++] = CityExpansionMths.toString(e);
+                    }
+                }
+                else for(int i = 0; i < playerBuilds.correspondingAmnt(r); ++i) sr.yourBuildings[playerbuildcnt++] = BuildingCardMths.toString(r);
+            }
+
+            return sr;
+        }
+
+        public void init(){
+            if(numberOfPlayers < 2 || numberOfPlayers > 4) Console.WriteLine("replace me with actual error handling. if you read this, haha your code does the big stupid");
             currentTurnPlayer = 0;
 
             buildingPile = new BuildingCardAmnts(0,0,0,0,0);
@@ -296,44 +427,107 @@ namespace catan{
             for(int i = 0; i < 5; ++i) market.correspondingAmnt(drawPile.takeRandomRes()) += 1;
         }
 
-        public void GameLoop(){
-            while(true){
-                PlayerState current = players[currentTurnPlayer];
-                current.startTurn();
+        public void ActionExecutor(string action, string[] parameters){
+            PlayerState current = players[currentTurnPlayer];
+            switch(action){
+                case "StartGame":
+                    init();
+                    for(int i = 0; i < numberOfPlayers; i++){
+                        RessourceCardAmnts initCards = new RessourceCardAmnts();
+                        initCards.correspondingAmnt(drawPile.takeRandomRes())++;
+                        initCards.correspondingAmnt(drawPile.takeRandomRes())++;
+                        initCards.correspondingAmnt(drawPile.takeRandomRes())++;
+                        players[i].init(initCards);
+                    }
+                    break;
+                case "EndTurn": 
+                    RessourceCardAmnts drawncards = new RessourceCardAmnts();
+                    for(int i = 0; i < current.getDrawCards(); ++i){
+                        drawncards.correspondingAmnt(drawPile.takeRandomRes()) += 1;
+                    }
+
+                    if(current.endTurn(drawncards)) break;
+
+                    currentTurnPlayer++;
+                    if(currentTurnPlayer >= players.Count) currentTurnPlayer = 0;
+                    break;
+                case "Buy":
+                    string thing = parameters[0];
+                    BuildingCard buything = BuildingCard.Expansion;
+                    switch(thing){
+                        case "Village":
+                            buything = BuildingCard.Village;
+                            break;
+                        case "City":
+                            buything = BuildingCard.City;
+                            break;
+                        case "Expansion":
+                            buything = BuildingCard.Expansion;
+                            //TODO
+                            break;
+                        case "Street":
+                            buything = BuildingCard.Street;
+                            break;
+                        case "Knight":
+                            buything = BuildingCard.Knight;
+                            break;
+                    }
+                    RessourceCardAmnts proposed = new RessourceCardAmnts();
+                    for(int i = 1; i < parameters.Length; i++){
+                        RessourceCard curCard = RessourceCard.Clay;
+                        switch (parameters[i]){
+                            case "Wood":
+                                curCard = RessourceCard.Wood;
+                                break;
+                            case "Wheat":
+                                curCard = RessourceCard.Wheat;
+                                break;
+                            case "Iron":
+                                curCard = RessourceCard.Iron;
+                                break;
+                            case "Sheep":
+                                curCard = RessourceCard.Sheep;
+                                break;
+                            case "Clay":
+                                curCard = RessourceCard.Clay;
+                                break;
+                        }
+                        proposed.correspondingAmnt(curCard)++;
+                    }
+                    bool res = current.buyBuilding(buything, proposed, null);
+                    break;
+                
+                //current.startTurn();
                 // player builds shit (player actions)
                 
-                RessourceCardAmnts drawncards = new RessourceCardAmnts();
-                for(int i = 0; i < current.getDrawCards(); ++i){
-                    drawncards.correspondingAmnt(drawPile.takeRandomRes()) += 1;
-                }
-
-                if(current.endTurn(drawncards)) break;
-
-                currentTurnPlayer++;
-                if(currentTurnPlayer >= players.Count) currentTurnPlayer = 0;
             }
         }
 
-        Dictionary<NetworkStream, int> clients;
-        Dictionary<int, NetworkStream> clients2;
-        int clientCnt = 0;
         public int connectant(NetworkStream stream){
-            if(clients.ContainsKey(stream)){
-                Console.WriteLine("Returning connection, but no user id, dafuq");//TODO handle that
-            }
-            else{
-                clients[stream] = clientCnt;
-                clients2[clientCnt] = stream;
-                stream.WriteAsync(Encoding.ASCII.GetBytes("{\"kind\":\"init\",\"user_id\":\""+clientCnt+"\"}"));
-                clientCnt++;
-            }
-            return clients[stream];
+            //if(clients.ContainsKey(stream)){
+           //     Console.WriteLine("Returning connection, but no user id, dafuq");//TODO handle that
+          //  }
+            stream.WriteAsync(Encoding.ASCII.GetBytes("{\"kind\":\"init\",\"user_id\":\""+numberOfPlayers+"\"}"));
+            numberOfPlayers++;
+            players.Add(new PlayerState(numberOfPlayers, stream));
+            return numberOfPlayers;
         }
 
         //Client tells us smth
         public void inform(Message msg){
+            if(msg.user_id.Value != currentTurnPlayer) return;
+
+            string[] splited = msg.msg.Split('|');
+            string[] parameters = splited[1].Split(',');
+            if(msg.user_id.Value != 0 && adminCommands.Contains(splited[0])) return;
+            ActionExecutor(splited[0], parameters);
+
             Console.WriteLine(msg.user_id+": "+msg.msg);
-            clients2[msg.user_id.Value].WriteAsync(Encoding.ASCII.GetBytes("{\"kind\":\"banana\"}"));
+            for(int i = 0; i < numberOfPlayers; ++i){
+                string jsonString = JsonSerializer.Serialize(stateToSend(i));
+                Console.WriteLine(jsonString);
+                players[i].stream.WriteAsync(Encoding.ASCII.GetBytes(jsonString));
+            }
         }
     }
 
@@ -359,6 +553,7 @@ class MessageDecode{
         static Dictionary<int, ServerState> gameInstances;
         static void Main(string[] args)
         {
+            Console.WriteLine("hi i run now");
             gameInstances = new Dictionary<int, ServerState>();
             server = new TcpListener(IPAddress.Any, 8052);
                 server.Start();
