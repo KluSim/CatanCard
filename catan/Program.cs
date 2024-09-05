@@ -108,6 +108,21 @@ namespace catan{
                 return wheat+iron+sheep+clay+wood;
             }
         }
+
+        public string stringify(){
+            return "["+wheat+","+iron+","+sheep+","+wood+","+clay+"]";
+        }
+
+        public RessourceCardAmnts(string str){
+            string r = str[1..^1];
+            string[] splited = r.Split(',');
+            wheat = Int32.Parse(splited[0]);
+            iron = Int32.Parse(splited[1]);
+            sheep = Int32.Parse(splited[2]);
+            wood = Int32.Parse(splited[3]);
+            clay = Int32.Parse(splited[4]);
+        }
+
         public RessourceCard takeRandomRes(){
             Random rnd = new Random();
             int nr = rnd.Next(0,total);
@@ -171,6 +186,21 @@ namespace catan{
             library = li; tradersGuild = tr; church = ch; cityHall = ci; castle = ca; university = un;
         }
 
+        public string stringify(){
+            return "["+library+","+tradersGuild+","+church+","+cityHall+","+castle+","+university+"]";
+        }
+
+        public ExpansionCardAmnts(string str){
+            string r = str[1..^1];
+            string[] splited = r.Split(',');
+            library = Int32.Parse(splited[0]);
+            tradersGuild = Int32.Parse(splited[1]);
+            church = Int32.Parse(splited[2]);
+            cityHall = Int32.Parse(splited[3]);
+            castle = Int32.Parse(splited[4]);
+            university = Int32.Parse(splited[5]);
+        }
+
         public ref int correspondingAmnt(CityExpansion ex){
             switch(ex) {
                 case CityExpansion.Library: return ref library;
@@ -194,6 +224,20 @@ namespace catan{
         }
         public BuildingCardAmnts(int v, int c, int k, int e, int s){
             village = v; city = c; knight = k; expansion = e; street = s;
+        }
+
+        public string stringify(){
+            return "["+village+","+city+","+knight+","+expansion+","+street+"]";
+        }
+
+        public BuildingCardAmnts(string str){
+            string r = str[1..^1];
+            string[] splited = r.Split(',');
+            village = Int32.Parse(splited[0]);
+            city = Int32.Parse(splited[1]);
+            knight = Int32.Parse(splited[2]);
+            expansion = Int32.Parse(splited[3]);
+            street = Int32.Parse(splited[4]);
         }
 
         public ref int correspondingAmnt(BuildingCard bc){
@@ -335,12 +379,13 @@ namespace catan{
     }
 
     class Schriftrolle{
-        public string[] markt {get; set;}
+        public string markt {get; set;}
         public string destiny {get; set;}
-        public string[] expansions {get; set;}
+        public string expansions {get; set;}
         public string[] leftBuys {get; set;}//list of ints
-        public string[] yourRes {get; set;}
-        public string[] yourBuildings {get; set;}
+        public string yourRes {get; set;}
+        public string yourBuildings {get; set;}
+        public string yourExpansions {get; set;}
     }
 
     class ServerState {
@@ -362,21 +407,11 @@ namespace catan{
 
         public Schriftrolle stateToSend(int player){
             Schriftrolle sr = new Schriftrolle();
-            sr.markt = new string[5];
-            int marktcnt = 0;
-            foreach(RessourceCard r in Enum.GetValues(typeof(RessourceCard))) {
-                sr.markt[marktcnt] = market.correspondingAmnt(r).ToString();
-                marktcnt++;
-            }
+            sr.markt = market.stringify();
 
             sr.destiny = CardOfFate ? "Clock" : "Counterclock";
 
-            sr.expansions = new string[6];
-            int expcnt = 0;
-            foreach(CityExpansion r in Enum.GetValues(typeof(CityExpansion))) {
-                sr.expansions[expcnt] = expansionPile.correspondingAmnt(r).ToString();
-                expcnt++;
-            }
+            sr.expansions = expansionPile.stringify();
 
             sr.leftBuys = new string[4];
             int buycnt = 0;
@@ -387,27 +422,13 @@ namespace catan{
             }
 
             RessourceCardAmnts playerRes = players[player].getRes(); 
-            sr.yourRes = new string[5];
-            int playerrescnt = 0;
-            foreach(RessourceCard r in Enum.GetValues(typeof(RessourceCard))) {
-                sr.yourRes[playerrescnt] = playerRes.correspondingAmnt(r).ToString();
-                playerrescnt++;
-            }
+            sr.yourRes = playerRes.stringify();
 
             BuildingCardAmnts playerBuilds = players[player].getBuildings();
-            ExpansionCardAmnts playerExpansions = players[player].getExpansions();
-            sr.yourBuildings = new string[playerBuilds.total];
-            int playerbuildcnt = 0;
-            foreach(BuildingCard r in Enum.GetValues(typeof(BuildingCard))) {
-                if(r == BuildingCard.Expansion){
-                    foreach(CityExpansion e in Enum.GetValues(typeof(CityExpansion))){
-                        if(playerExpansions.correspondingAmnt(e) == 0) continue;
-                        sr.yourBuildings[playerbuildcnt++] = CityExpansionMths.toString(e);
-                    }
-                }
-                else for(int i = 0; i < playerBuilds.correspondingAmnt(r); ++i) sr.yourBuildings[playerbuildcnt++] = BuildingCardMths.toString(r);
-            }
+            sr.yourBuildings = playerBuilds.stringify();
 
+            ExpansionCardAmnts playerExpansions = players[player].getExpansions();
+            sr.yourExpansions = playerExpansions.stringify();
             return sr;
         }
 
