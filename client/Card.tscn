@@ -1,0 +1,32 @@
+[gd_scene load_steps=8 format=3 uid="uid://d0i7qm2c3d4dh"]
+
+[ext_resource type="Script" path="res://Card.cs" id="1_ujl88"]
+[ext_resource type="Material" uid="uid://c1mb4s1eyiyna" path="res://Mats/Clay.tres" id="2_hud0k"]
+[ext_resource type="Material" uid="uid://xt4mt2r1cww1" path="res://Mats/Wood.tres" id="3_0q3il"]
+[ext_resource type="Material" uid="uid://y1hi7fxxh6m2" path="res://Mats/Iron.tres" id="4_17sg6"]
+[ext_resource type="Material" uid="uid://djwrsma1v88fw" path="res://Mats/Sheep.tres" id="5_svxlv"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1htmc"]
+size = Vector3(0.064, 0.001, 0.089)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jsqwt"]
+
+[node name="Card" type="Node3D" node_paths=PackedStringArray("mesh")]
+script = ExtResource("1_ujl88")
+clayMat = ExtResource("2_hud0k")
+woodMat = ExtResource("3_0q3il")
+ironMat = ExtResource("4_17sg6")
+sheepMat = ExtResource("5_svxlv")
+mesh = NodePath("StaticBody3D/MeshInstance3D")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00842115, 0.0348587, -0.0316755)
+shape = SubResource("BoxShape3D_1htmc")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
+transform = Transform3D(0.064, 0, 0, 0, 0.001, 0, 0, 0, 0.089, 0.00842115, 0.0348587, -0.0316755)
+mesh = SubResource("BoxMesh_jsqwt")
+skeleton = NodePath("../..")
+surface_material_override/0 = ExtResource("2_hud0k")

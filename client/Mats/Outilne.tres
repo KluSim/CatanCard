@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://bky3jxh8gomp0"]
+
+[ext_resource type="Shader" path="res://Outline.gdshader" id="1_ik501"]
+
+[resource]
+resource_local_to_scene = true
+render_priority = 2
+shader = ExtResource("1_ik501")
+shader_parameter/outline_color = null
+shader_parameter/outline_width = 1.0

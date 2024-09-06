@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://f0iyxqask40l"]
+
+[ext_resource type="Script" path="res://Player.cs" id="1_7swsx"]
+[ext_resource type="PackedScene" uid="uid://d0i7qm2c3d4dh" path="res://Card.tscn" id="2_qwqj4"]
+
+[node name="Player" type="Node3D" node_paths=PackedStringArray("resCardStart")]
+script = ExtResource("1_7swsx")
+card = ExtResource("2_qwqj4")
+resCardStart = NodePath("ResCardStart")
+
+[node name="ResCardStart" type="Node3D" parent="."]
+
+[node name="StreetCardStart" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 8.12507)
+
+[node name="SettelmentCardStart" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.10973, 0, 8.12507)
+
+[node name="KnightCardStart" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.10973, 0, 8.12507)
