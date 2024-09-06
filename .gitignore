@@ -1,2 +1,4 @@
-catan/bin
-catan/obj
+server/catan/bin
+server/catan/obj
+client/.godot
+client/android/
