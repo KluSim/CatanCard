@@ -3,7 +3,6 @@
 [ext_resource type="Shader" path="res://Outline.gdshader" id="1_ik501"]
 
 [resource]
-resource_local_to_scene = true
 render_priority = 2
 shader = ExtResource("1_ik501")
 shader_parameter/outline_color = null

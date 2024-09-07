@@ -3,5 +3,6 @@
 [ext_resource type="Material" uid="uid://bky3jxh8gomp0" path="res://Mats/Outilne.tres" id="1_kgnuj"]
 
 [resource]
+resource_local_to_scene = true
 next_pass = ExtResource("1_kgnuj")
 albedo_color = Color(0.600708, 0.547011, 0.224751, 1)

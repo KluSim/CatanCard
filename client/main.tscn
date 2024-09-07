@@ -1,15 +1,18 @@
-[gd_scene load_steps=4 format=3 uid="uid://bjfgcpy34yc10"]
+[gd_scene load_steps=5 format=3 uid="uid://bjfgcpy34yc10"]
 
 [ext_resource type="Script" path="res://Main.cs" id="1_l72f6"]
+[ext_resource type="PackedScene" uid="uid://d0i7qm2c3d4dh" path="res://Card.tscn" id="2_ajwuo"]
 [ext_resource type="PackedScene" uid="uid://f0iyxqask40l" path="res://Player.tscn" id="2_l16os"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_f3vdv"]
 
-[node name="Node3D" type="Node3D" node_paths=PackedStringArray("textField", "textEdit", "testPlayer")]
+[node name="Node3D" type="Node3D" node_paths=PackedStringArray("textField", "textEdit", "testPlayer", "marketStart")]
 script = ExtResource("1_l72f6")
 textField = NodePath("Camera3D/CanvasLayer/RichTextLabel")
 textEdit = NodePath("Camera3D/CanvasLayer/TextEdit")
+card = ExtResource("2_ajwuo")
 testPlayer = NodePath("Player")
+marketStart = NodePath("MarketStart")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 3.1789, 0)
@@ -17,57 +20,67 @@ transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 3.1
 [node name="CanvasLayer" type="CanvasLayer" parent="Camera3D"]
 
 [node name="RichTextLabel" type="RichTextLabel" parent="Camera3D/CanvasLayer"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_right = -706.0
-offset_bottom = -414.0
+anchors_preset = -1
+anchor_right = 0.387
+anchor_bottom = 0.361
+offset_right = 0.175964
+offset_bottom = 0.0719757
 grow_horizontal = 2
 grow_vertical = 2
 
 [node name="TextEdit" type="TextEdit" parent="Camera3D/CanvasLayer"]
 anchors_preset = -1
+anchor_top = 0.434
 anchor_right = 0.424
 anchor_bottom = 0.512
-offset_top = 281.0
+offset_top = -0.231995
 offset_right = -0.448029
 offset_bottom = 0.223999
 
 [node name="StartGameBtn" type="Button" parent="Camera3D/CanvasLayer"]
 anchors_preset = -1
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 6.0
-offset_top = 338.0
-offset_right = -1055.0
-offset_bottom = -279.0
+anchor_left = 0.005
+anchor_top = 0.522
+anchor_right = 0.084
+anchor_bottom = 0.569
+offset_left = 0.24
+offset_top = -0.256012
+offset_right = 0.231995
+offset_bottom = 0.287994
+grow_horizontal = 2
+grow_vertical = 2
 text = "StartGame"
 
 [node name="EndTurnBtn" type="Button" parent="Camera3D/CanvasLayer"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 102.0
-offset_top = 338.0
-offset_right = -976.0
-offset_bottom = -279.0
+anchors_preset = -1
+anchor_left = 0.089
+anchor_top = 0.522
+anchor_right = 0.153
+anchor_bottom = 0.569
+offset_left = -0.528
+offset_top = -0.256012
+offset_right = -0.256012
+offset_bottom = 0.287994
 grow_horizontal = 2
 grow_vertical = 2
 text = "EndTurn"
 
 [node name="BuyBtn" type="Button" parent="Camera3D/CanvasLayer"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 182.0
-offset_top = 338.0
-offset_right = -932.0
-offset_bottom = -279.0
+anchors_preset = -1
+anchor_left = 0.158
+anchor_top = 0.522
+anchor_right = 0.191
+anchor_bottom = 0.569
+offset_left = -0.0160065
+offset_top = -0.256012
+offset_right = -0.0320129
+offset_bottom = 0.287994
 grow_horizontal = 2
 grow_vertical = 2
 text = "Buy"
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+visible = false
 mesh = SubResource("PlaneMesh_f3vdv")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
@@ -75,6 +88,8 @@ transform = Transform3D(0.987604, 0.00756665, 0.156786, -0.154684, 0.216703, 0.9
 
 [node name="Player" parent="." instance=ExtResource("2_l16os")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0857506, 0.165163, 0.125361)
+
+[node name="MarketStart" type="Node3D" parent="."]
 
 [connection signal="text_changed" from="Camera3D/CanvasLayer/TextEdit" to="." method="OnTextEditSet"]
 [connection signal="button_down" from="Camera3D/CanvasLayer/StartGameBtn" to="Player" method="OnStartGameBtnDown"]

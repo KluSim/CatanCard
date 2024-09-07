@@ -241,7 +241,7 @@ namespace shared
         }
     }
 
-    class Schriftrolle{
+    public class Schriftrolle{
         public string kind = "Schriftrolle";
         public string markt {get; set;}
         public string destiny {get; set;}
@@ -286,7 +286,7 @@ namespace shared
         }
     }
 
-    class ServerToClient{
+    public class ServerToClient{
         public string kind;
         public Schriftrolle? schriftrolle;
         public int? user_id;
@@ -311,7 +311,7 @@ namespace shared
         }
     }
 
-    class ServerToClientDecode{
+    public class ServerToClientDecode{
         public string kind{get;set;}
         public Schriftrolle? schriftrolle{get;set;}
         public string? user_id{get;set;}

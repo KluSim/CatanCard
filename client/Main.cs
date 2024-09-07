@@ -9,12 +9,17 @@ using System.Text.Json;
 using System.Linq;
 using shared;
 
-public class TCPTestClient{  	
+public class TCPTestClient{  
+	private Main main;	
 	private TcpClient socketConnection; 	
 	private Thread clientReceiveThread; 	
 	public void Start () {
 		ConnectToTcpServer();     
 	}  	
+
+	public TCPTestClient(Main m){
+		main = m;
+	}
 
 	private void ConnectToTcpServer () { 		
 		try {  			
@@ -58,7 +63,8 @@ public class TCPTestClient{
 						ServerToClient deCoded = new ServerToClient(deJsoned);
 						if(deCoded.kind == "init"){
 							uid = deCoded.user_id.Value;
-						}		
+						}
+						main.handleServerMsg(deCoded);	
 					} 				
 				} 			
 			}         
@@ -112,12 +118,20 @@ public partial class Main : Node3D
 	private RichTextLabel textField;
 	[Export]
 	private TextEdit textEdit;
+
+	private List<Card> marketCards;
+
+	Queue<ServerToClient> serverMsgs;
+	[Export]
+	PackedScene card;
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
 		base._Ready();
+		marketCards = new List<Card>();
+		serverMsgs = new Queue<ServerToClient>();
 		//textField = GetNode<RichTextLabel>("Camera3D/CanvasLayer/RichTextLabel");
-		client = new TCPTestClient();
+		client = new TCPTestClient(this);
 		client.Start();
 		client.gameid = 32;
 		testPlayer.init(client);
@@ -130,12 +144,40 @@ public partial class Main : Node3D
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
+		while(serverMsgs.Count != 0){
+			ServerToClient serverMessage = serverMsgs.Dequeue();
+			if(serverMessage.kind == "update"){
+			foreach(Card c in marketCards){
+				c.QueueFree();
+			}
+			marketCards.Clear();
+			Schriftrolle sr = serverMessage.schriftrolle;
+			RessourceCardAmnts marketCardsAmnts = new RessourceCardAmnts(sr.markt);
+			foreach(RessourceCard r in Enum.GetValues(typeof(RessourceCard))) {
+				int num = marketCardsAmnts.correspondingAmnt(r);
+				for(int i = 0; i < num; i++){
+					Card cardInstance = card.Instantiate<Card>();
+					AddChild(cardInstance);
+					cardInstance.GlobalTransform = marketStart.GlobalTransform;
+					marketCards.Add(cardInstance);
+					cardInstance.TranslateObjectLocal(new Vector3((marketCards.Count-1)*0.12f,0,0));
+					cardInstance.SetTypeRc(r);
+				}
+			}
+
+		}
+		}
+	}
+
+	public void handleServerMsg(ServerToClient serverMessage){
+		serverMsgs.Enqueue(serverMessage);
 	}
 
 	[Export]
 	Player testPlayer;
 	[Export]
 	Node3D marketStart;
+
 
 	private void OnTextEditSet(){
 		string curText = textEdit.Text;

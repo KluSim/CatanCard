@@ -2,3 +2,4 @@ server/catan/bin
 server/catan/obj
 client/.godot
 client/android/
+client/data_catan-client_linuxbsd_x86_64
