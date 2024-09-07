@@ -120,6 +120,7 @@ public partial class Main : Node3D
 		client = new TCPTestClient();
 		client.Start();
 		client.gameid = 32;
+		testPlayer.init(client);
 		//textField.Text = "banana";
 		//Console.WriteLine("Give id of game to join/create");
 		//client.gameid = Int32.Parse(Console.ReadLine());

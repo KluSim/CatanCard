@@ -16,6 +16,9 @@ public partial class Player : Node3D
 	RessourceCardAmnts resCards;
 	ExpansionCardAmnts expCards;
 	BuildingCardAmnts buildCards;
+
+	TCPTestClient client;
+
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
@@ -25,9 +28,22 @@ public partial class Player : Node3D
 		allCards = new List<Card>();
 	}
 
+	public void init(TCPTestClient cl){
+		client = cl;
+	}
+
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
+	}
+	private void OnStartGameBtnDown(){
+		client.SendMessage("StartGame|");
+	}
+	private void OnEndTurnBtnDown(){
+		client.SendMessage("EndTurn|");
+	}
+	private void OnBuyBtnDown(){
+		//client.SendMessage("EndTurn|");
 	}
 
 	public void AddRes(RessourceCard rc){

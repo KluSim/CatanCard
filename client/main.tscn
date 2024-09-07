@@ -33,6 +33,40 @@ offset_top = 281.0
 offset_right = -0.448029
 offset_bottom = 0.223999
 
+[node name="StartGameBtn" type="Button" parent="Camera3D/CanvasLayer"]
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 338.0
+offset_right = -1055.0
+offset_bottom = -279.0
+text = "StartGame"
+
+[node name="EndTurnBtn" type="Button" parent="Camera3D/CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 102.0
+offset_top = 338.0
+offset_right = -976.0
+offset_bottom = -279.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "EndTurn"
+
+[node name="BuyBtn" type="Button" parent="Camera3D/CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 182.0
+offset_top = 338.0
+offset_right = -932.0
+offset_bottom = -279.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Buy"
+
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("PlaneMesh_f3vdv")
 
@@ -43,3 +77,6 @@ transform = Transform3D(0.987604, 0.00756665, 0.156786, -0.154684, 0.216703, 0.9
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0857506, 0.165163, 0.125361)
 
 [connection signal="text_changed" from="Camera3D/CanvasLayer/TextEdit" to="." method="OnTextEditSet"]
+[connection signal="button_down" from="Camera3D/CanvasLayer/StartGameBtn" to="Player" method="OnStartGameBtnDown"]
+[connection signal="button_down" from="Camera3D/CanvasLayer/EndTurnBtn" to="Player" method="OnEndTurnBtnDown"]
+[connection signal="button_down" from="Camera3D/CanvasLayer/BuyBtn" to="Player" method="OnBuyBtnDown"]
