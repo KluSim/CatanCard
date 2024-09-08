@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://wk6olypje462"]
+[gd_scene load_steps=14 format=3 uid="uid://wk6olypje462"]
 
 [ext_resource type="Script" path="res://Card.cs" id="1_oxb0f"]
 [ext_resource type="Texture2D" uid="uid://duhbg3kcqd8uk" path="res://Mats/wood.png" id="2_08lo8"]
@@ -12,11 +12,13 @@
 [ext_resource type="Texture2D" uid="uid://c782t2yf4gysk" path="res://Mats/knight.png" id="9_drbul"]
 [ext_resource type="Texture2D" uid="uid://bgu8g2h7c1og4" path="res://icon.svg" id="10_5rt4h"]
 [ext_resource type="Texture2D" uid="uid://d06m6esh4r4xo" path="res://Mats/street.png" id="11_6dqts"]
+[ext_resource type="Texture2D" uid="uid://sesj7kqv34bs" path="res://Mats/victorypoint.png" id="13_a3ht5"]
 
-[node name="Card2d" type="Node2D" node_paths=PackedStringArray("textureSlot", "outline")]
+[node name="Card2d" type="Node2D" node_paths=PackedStringArray("textureSlot", "outline", "victorypoint")]
 script = ExtResource("1_oxb0f")
-textureSlot = NodePath("Sprite2D")
-outline = NodePath("Sprite2D2")
+textureSlot = NodePath("Card")
+outline = NodePath("OutlineSprite")
+victorypoint = NodePath("VictoryPointSprite")
 wood = ExtResource("2_08lo8")
 clay = ExtResource("3_rdhsc")
 iron = ExtResource("4_kax1u")
@@ -28,10 +30,15 @@ knight = ExtResource("9_drbul")
 expansion = ExtResource("10_5rt4h")
 street = ExtResource("11_6dqts")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Card" type="Sprite2D" parent="."]
 scale = Vector2(0.6, 0.6)
 
-[node name="Sprite2D2" type="Sprite2D" parent="."]
+[node name="OutlineSprite" type="Sprite2D" parent="."]
 visible = false
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("6_8w7e1")
+
+[node name="VictoryPointSprite" type="Sprite2D" parent="."]
+visible = false
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("13_a3ht5")

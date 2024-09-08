@@ -22,6 +22,23 @@ namespace shared
             }
             return "";
         }
+
+        public static RessourceCard toEnum(string s) {
+            switch(s){
+                case "Wheat":
+                    return RessourceCard.Wheat;
+                case "Iron":
+                    return RessourceCard.Iron;
+                case "Wood":
+                    return RessourceCard.Wood;
+                case "Sheep":
+                    return RessourceCard.Sheep;
+                case "Clay":
+                    return RessourceCard.Clay;
+                default:
+                    return RessourceCard.Clay;
+            }
+        }
     }
     public enum BuildingCard{
         Village, City, Knight, Expansion, Street
@@ -207,7 +224,7 @@ namespace shared
         }
     }
 
-    class BuildingCardAmnts{
+    public class BuildingCardAmnts{
         public int village, city, knight, expansion, street;
         public int total{
             get {

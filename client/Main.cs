@@ -124,6 +124,7 @@ public partial class Main : Node2D
 	Queue<ServerToClient> serverMsgs;
 	[Export]
 	PackedScene card;
+	
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
@@ -168,7 +169,7 @@ public partial class Main : Node2D
 
 				//player
 				testPlayer.SetRes(new RessourceCardAmnts(sr.yourRes));
-				
+				testPlayer.setBuildings(new BuildingCardAmnts(sr.yourBuildings));
 			}
 		}
 	}
@@ -196,7 +197,36 @@ public partial class Main : Node2D
 		}*/
 		client.SendMessage(cmd);
 	}
+	
+	bool isTrading = false;
+	public void MarketTradeBtn(){
+		if(!isTrading) MarketTradeStart();
+		else MarketTradeEnd();
+	}
 
-	private const float RayLength = 1000.0f;
-	private bool doRaycast = false;
+	public void MarketTradeStart(){
+		Card? selected = null;
+		foreach(Card c in marketCards){
+			if(c.isSelected){
+				selected = c;
+				break;
+			}
+		}
+		if(selected == null) return;
+		isTrading = true;
+		client.SendMessage("StartMarketTrade|" + selected.type);
+	}
+	
+	public void MarketTradeEnd(){
+		Card? selected = null;
+		foreach(Card c in testPlayer.resCardObjs){
+			if(c.isSelected){
+				selected = c;
+				break;
+			}
+		}
+		if(selected == null) return;
+		isTrading = true;
+		client.SendMessage("EndMarketTrade|" + selected.type);
+	}
 }

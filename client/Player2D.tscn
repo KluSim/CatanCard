@@ -6,11 +6,5 @@
 [node name="Player2d" type="Node2D" node_paths=PackedStringArray("resCardStart", "tmpCardsStart")]
 script = ExtResource("1_n2emn")
 card = ExtResource("2_vgare")
-resCardStart = NodePath("ResCardStart")
-tmpCardsStart = NodePath("TmpCardsStart")
-
-[node name="ResCardStart" type="Node2D" parent="."]
-position = Vector2(20, 180)
-
-[node name="TmpCardsStart" type="Node2D" parent="."]
-position = Vector2(16, 28)
+resCardStart = NodePath("")
+tmpCardsStart = NodePath("")

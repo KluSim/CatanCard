@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://8rcywlbcipiw"
-path="res://.godot/imported/pixil-frame-0.png-0b69f1f8f1196a7129e32f4a424e2404.ctex"
+uid="uid://sesj7kqv34bs"
+path="res://.godot/imported/victorypoint.png-5137dbb01a2d25e850367cbc9e67c71b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Mats/pixil-frame-0.png"
-dest_files=["res://.godot/imported/pixil-frame-0.png-0b69f1f8f1196a7129e32f4a424e2404.ctex"]
+source_file="res://Mats/victorypoint.png"
+dest_files=["res://.godot/imported/victorypoint.png-5137dbb01a2d25e850367cbc9e67c71b.ctex"]
 
 [params]
 

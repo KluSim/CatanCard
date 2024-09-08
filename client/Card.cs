@@ -10,6 +10,8 @@ public partial class Card : Node2D
 	[Export]
 	Sprite2D outline;
 	[Export]
+	Sprite2D victorypoint;
+	[Export]
 	Texture2D wood;
 	[Export]
 	Texture2D clay;
@@ -31,10 +33,10 @@ public partial class Card : Node2D
 	[Export]
 	Texture2D street;
 	public Player player;
-	bool isSelected = false;
+	public bool isSelected = false;
 	public selectedCallback selectedCallback;
 
-	string type;
+	public string type;
 	public override void _Ready()
 	{
 	}
@@ -117,5 +119,10 @@ public partial class Card : Node2D
 				SelectToggle();
 			}
 		}
+	}
+	
+	public void toggleVictory(bool b) { //Nute gunray: ahhhh... victory
+		if(b) victorypoint.Show();
+		else victorypoint.Hide();
 	}
 }

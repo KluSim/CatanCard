@@ -20,6 +20,7 @@ namespace catan{
         BuildingCardAmnts buildingCards;
         ExpansionCardAmnts expansionCards;
         Dictionary<BuildingCard, bool> canBuild;
+        int availableTrades = 0;
         public NetworkStream stream;
 
         public PlayerState(int playerID, NetworkStream ns){
@@ -110,12 +111,48 @@ namespace catan{
 
         public void startTurn(){
             foreach(KeyValuePair<BuildingCard, bool> kvp in canBuild ) canBuild[kvp.Key] = true;
+            availableTrades = 1;
+            if(buildingCards.street >= 2) availableTrades += (buildingCards.street - 1) / 2;
         }
 
         public bool endTurn(RessourceCardAmnts drawnCards){
             resCards.add(drawnCards);
             calculateVictoryPoints();
             return victoryPoints >= 10;
+        }
+
+        public bool startPlayerSteal(PlayerState other){
+            if(availableTrades <= 0) return false;
+            RessourceCardAmnts res = other.getRes();
+            RessourceCard stolenCard = res.takeRandomRes();
+            
+            resCards.correspondingAmnt(stolenCard)++;
+            availableTrades--;
+            return true;
+        }
+
+        public bool endPlayerSteal(PlayerState other, RessourceCard c){
+            if(resCards.correspondingAmnt(c) <= 0) return false;
+            other.getRes().correspondingAmnt(c)++;
+            resCards.correspondingAmnt(c)--;
+
+            return true;
+        }
+
+        public bool startMarketTrade(RessourceCardAmnts market, RessourceCard c){
+            if(availableTrades <= 0) return false;
+            if(market.correspondingAmnt(c) <= 00) return false;
+            resCards.correspondingAmnt(c)++;
+            market.correspondingAmnt(c)--;
+            return true;
+        }
+
+        public bool endMarketTrade(RessourceCardAmnts market, RessourceCard c){
+            if(resCards.correspondingAmnt(c) <= 0) return false;
+            resCards.correspondingAmnt(c)--;
+            market.correspondingAmnt(c)++;
+            availableTrades--;
+            return true;
         }
 
         public void calculateVictoryPoints(){
@@ -139,7 +176,7 @@ namespace catan{
         public BuildingCardAmnts getBuildings() {return buildingCards; }
 
         public ExpansionCardAmnts getExpansions() {return expansionCards; }
-        //TODO: trade amnts, stealing, expansion effects, city effects, main game loop
+        //TODO: expansion effects, city effects
     }
 
     
@@ -149,7 +186,8 @@ namespace catan{
         List<PlayerState> players;
         int numberOfPlayers = 0;
         int currentTurnPlayer;
-
+        int playerTradingAction = 0; // 0=nothing, 1 = isStealing,  2 = isTrading, 4 = isPicking
+        int targetPlayer;
         RessourceCardAmnts drawPile;
         BuildingCardAmnts buildingPile;
         ExpansionCardAmnts expansionPile;
@@ -217,13 +255,14 @@ namespace catan{
                         players[i].init(initCards);
                     }
                     break;
-                case "EndTurn": 
+                case "EndTurn":
+                    if(playerTradingAction != 0) break;
                     RessourceCardAmnts drawncards = new RessourceCardAmnts();
                     for(int i = 0; i < current.getDrawCards(); ++i){
                         drawncards.correspondingAmnt(drawPile.takeRandomRes()) += 1;
                     }
 
-                    if(current.endTurn(drawncards)) break;
+                    if(!current.endTurn(drawncards)) break; //TODO END GAME
 
                     currentTurnPlayer++;
                     if(currentTurnPlayer >= players.Count) currentTurnPlayer = 0;
@@ -251,27 +290,28 @@ namespace catan{
                     }
                     RessourceCardAmnts proposed = new RessourceCardAmnts();
                     for(int i = 1; i < parameters.Length; i++){
-                        RessourceCard curCard = RessourceCard.Clay;
-                        switch (parameters[i]){
-                            case "Wood":
-                                curCard = RessourceCard.Wood;
-                                break;
-                            case "Wheat":
-                                curCard = RessourceCard.Wheat;
-                                break;
-                            case "Iron":
-                                curCard = RessourceCard.Iron;
-                                break;
-                            case "Sheep":
-                                curCard = RessourceCard.Sheep;
-                                break;
-                            case "Clay":
-                                curCard = RessourceCard.Clay;
-                                break;
-                        }
+                        RessourceCard curCard = RessourceCardMths.toEnum(parameters[i]);
                         proposed.correspondingAmnt(curCard)++;
                     }
                     bool res = current.buyBuilding(buything, proposed, null);
+                    break;
+                case "StartPlayerSteal":
+                    if(playerTradingAction != 0) break;
+                    targetPlayer = Int32.Parse(parameters[0]);
+                    if(targetPlayer == currentTurnPlayer) break;
+                    if(current.startPlayerSteal(players[targetPlayer])) playerTradingAction = 1;
+                    break;
+                case "EndPlayerSteal":
+                    if(playerTradingAction != 2) break;
+                    if(current.endPlayerSteal(players[targetPlayer], RessourceCardMths.toEnum(parameters[0]))) playerTradingAction = 0;
+                    break;
+                case "StartMarketTrade":
+                    if(playerTradingAction != 0) break;
+                    if(current.startMarketTrade(market, RessourceCardMths.toEnum(parameters[0]))) playerTradingAction = 2;
+                    break;
+                case "EndMarketTrade":
+                    if(playerTradingAction != 2) break;
+                    if(current.endMarketTrade(market, RessourceCardMths.toEnum(parameters[0]))) playerTradingAction = 0;
                     break;
                 
                 //current.startTurn();
@@ -381,6 +421,10 @@ namespace catan{
                 Console.WriteLine("Socket exception: " + socketException);
             }
             catch(InvalidOperationException ioe){
+                Console.WriteLine("Client Disconnect");
+                gameInstances = new Dictionary<int, ServerState>();
+            }
+            catch(IOException ioe){
                 Console.WriteLine("Client Disconnect");
                 gameInstances = new Dictionary<int, ServerState>();
             }

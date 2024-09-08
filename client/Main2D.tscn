@@ -29,36 +29,38 @@ anchors_preset = -1
 anchor_top = 0.434
 anchor_right = 0.245181
 anchor_bottom = 0.490395
-offset_top = -0.231995
-offset_right = -0.448029
-offset_bottom = 0.223999
+offset_left = -464.0
+offset_top = -9.23199
+offset_right = -464.448
+offset_bottom = -8.776
 metadata/_edit_use_anchors_ = true
 
 [node name="StartGameBtn" type="Button" parent="CanvasLayer"]
 anchors_preset = -1
-anchor_left = 0.005
+anchor_left = 0.007
 anchor_top = 0.522
 anchor_right = 0.084
-anchor_bottom = 0.569
-offset_left = 0.24
-offset_top = -0.256012
-offset_right = 0.231995
-offset_bottom = 0.287994
+anchor_bottom = 0.566
+offset_left = -8.064
+offset_top = -2.25601
+offset_right = -5.768
+offset_bottom = 0.231964
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 4
 text = "StartGame"
 metadata/_edit_use_anchors_ = true
 
 [node name="EndTurnBtn" type="Button" parent="CanvasLayer"]
 anchors_preset = -1
-anchor_left = 0.089
+anchor_left = 0.09
 anchor_top = 0.522
 anchor_right = 0.153
-anchor_bottom = 0.569
-offset_left = -0.528
-offset_top = -0.256012
-offset_right = -0.256012
-offset_bottom = 0.287994
+anchor_bottom = 0.566
+offset_left = 0.319992
+offset_top = -2.25601
+offset_right = 1.744
+offset_bottom = 0.231964
 grow_horizontal = 2
 grow_vertical = 2
 text = "EndTurn"
@@ -66,25 +68,56 @@ metadata/_edit_use_anchors_ = true
 
 [node name="BuyBtn" type="Button" parent="CanvasLayer"]
 anchors_preset = -1
-anchor_left = 0.158
+anchor_left = 0.16
 anchor_top = 0.522
 anchor_right = 0.191
-anchor_bottom = 0.569
-offset_left = -0.0160065
-offset_top = -0.256012
-offset_right = -0.0320129
-offset_bottom = 0.287994
+anchor_bottom = 0.566
+offset_left = -0.320007
+offset_top = -2.25601
+offset_right = 1.96802
+offset_bottom = 0.231964
 grow_horizontal = 2
 grow_vertical = 2
 text = "Buy"
-metadata/_edit_use_anchors_ = true
 
-[node name="Player2d" parent="." instance=ExtResource("3_6pgo2")]
-position = Vector2(30, 481)
+[node name="Button" type="Button" parent="CanvasLayer"]
+anchors_preset = -1
+anchor_left = 0.201
+anchor_top = 0.519
+anchor_right = 0.277
+anchor_bottom = 0.566
+offset_left = -167.552
+offset_top = 47.688
+offset_right = -168.104
+offset_bottom = 48.232
+text = "Market (S)"
+
+[node name="Player2d" parent="." node_paths=PackedStringArray("resCardStart", "tmpCardsStart", "habitatStart", "roadsStart", "knightStart") instance=ExtResource("3_6pgo2")]
+resCardStart = NodePath("../ResCards")
+tmpCardsStart = NodePath("../TmpCars")
+habitatStart = NodePath("../Habitat")
+roadsStart = NodePath("../Roads")
+knightStart = NodePath("../Knight")
 
 [node name="MarketStart" type="Node2D" parent="."]
-position = Vector2(354, 204)
+position = Vector2(328, 64)
+
+[node name="Roads" type="Node2D" parent="."]
+position = Vector2(320, 296)
+
+[node name="TmpCars" type="Node2D" parent="."]
+position = Vector2(8, 400)
+
+[node name="ResCards" type="Node2D" parent="."]
+position = Vector2(224, 512)
+
+[node name="Habitat" type="Node2D" parent="."]
+position = Vector2(448, 296)
+
+[node name="Knight" type="Node2D" parent="."]
+position = Vector2(576, 296)
 
 [connection signal="button_down" from="CanvasLayer/StartGameBtn" to="Player2d" method="OnStartGameBtnDown"]
 [connection signal="button_down" from="CanvasLayer/EndTurnBtn" to="Player2d" method="OnEndTurnBtnDown"]
 [connection signal="button_down" from="CanvasLayer/BuyBtn" to="Player2d" method="OnBuyBtnDown"]
+[connection signal="button_down" from="CanvasLayer/Button" to="." method="MarketTradeBtn"]
