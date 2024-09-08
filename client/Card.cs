@@ -1,24 +1,38 @@
 using shared;
 using Godot;
+using System;
 
-public partial class Card : Node3D
+public partial class Card : Node2D
 {
-	// Called when the node enters the scene tree for the first time.
-	[Export]
-	Material clayMat;
-	[Export]
-	Material woodMat;
-	[Export]
-	Material ironMat;
-	[Export]
-	Material sheepMat;
-
 
 	[Export]
-	MeshInstance3D mesh;
+	Sprite2D textureSlot;
+	[Export]
+	Sprite2D outline;
+	[Export]
+	Texture2D wood;
+	[Export]
+	Texture2D clay;
+	[Export]
+	Texture2D iron;
+	[Export]
+	Texture2D wheat;
+	[Export]
+	Texture2D sheep;
 
+	[Export]
+	Texture2D village;
+	[Export]
+	Texture2D city;
+	[Export]
+	Texture2D knight;
+	[Export]
+	Texture2D expansion;
+	[Export]
+	Texture2D street;
 	public Player player;
 	bool isSelected = false;
+	public selectedCallback selectedCallback;
 
 	string type;
 	public override void _Ready()
@@ -36,32 +50,72 @@ public partial class Card : Node3D
 	public void SetTypeRc(RessourceCard rc){
 		switch(rc){
 			case RessourceCard.Clay:
-				mesh.SetSurfaceOverrideMaterial(0,clayMat);
+				textureSlot.Texture = clay;
 				type = "Clay";
 				break;
 			case RessourceCard.Wood:
-				mesh.SetSurfaceOverrideMaterial(0,woodMat);
+				textureSlot.Texture = wood;
 				type = "Wood";
 				break;
 			case RessourceCard.Sheep:
-				mesh.SetSurfaceOverrideMaterial(0,sheepMat);
+				textureSlot.Texture = sheep;
 				type = "Sheep";
 				break;
 			case RessourceCard.Iron:
-				mesh.SetSurfaceOverrideMaterial(0,ironMat);
+				textureSlot.Texture = iron;
 				type = "Iron";
+				break;
+			case RessourceCard.Wheat:
+				textureSlot.Texture = wheat;
+				type = "Wheat";
 				break;
 		}
 		
 	}
 
-	public void Select(){
-		var a = mesh.GetSurfaceOverrideMaterial(0).NextPass as ShaderMaterial;
-		//Console.WriteLine(a.GetShaderParameter("outline_width").As<float>());
+	public void SetTypeBuy(BuildingCard bc){
+		switch(bc){
+			case BuildingCard.Village:
+				textureSlot.Texture = village;
+				type = "Village";
+				break;
+			case BuildingCard.City:
+				textureSlot.Texture = city;
+				type = "City";
+				break;
+			case BuildingCard.Knight:
+				textureSlot.Texture = knight;
+				type = "Knight";
+				break;
+			case BuildingCard.Expansion:
+				textureSlot.Texture = expansion;
+				type = "Expansion";
+				break;
+			case BuildingCard.Street:
+				textureSlot.Texture = street;
+				type = "Street";
+				break;
+		}
+	}
+
+	public void SelectToggle(){
 		isSelected = !isSelected;
-		if(!isSelected)
-			a.SetShaderParameter("outline_width",1.0f);
+		if(isSelected){
+			outline.Show();
+			if(selectedCallback != null)selectedCallback(type);
+		}
 		else
-			a.SetShaderParameter("outline_width",3.0f);
+			outline.Hide();
+	}
+
+	public override void _Input(InputEvent @event)
+	{
+		if (@event is InputEventMouseButton eventMouseButton && eventMouseButton.Pressed && eventMouseButton.ButtonIndex == MouseButton.Left)
+		{
+			InputEventMouseButton e = @event as InputEventMouseButton;
+			if(outline.GetRect().HasPoint(ToLocal(e.Position))){
+				SelectToggle();
+			}
+		}
 	}
 }

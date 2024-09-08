@@ -1,6 +1,6 @@
 [gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://xt4mt2r1cww1"]
 
-[ext_resource type="Material" uid="uid://bky3jxh8gomp0" path="res://Mats/Outilne.tres" id="1_tn7gr"]
+[ext_resource type="Material" uid="uid://bky3jxh8gomp0" path="res://Mats/dumb/Outilne.tres" id="1_tn7gr"]
 
 [resource]
 resource_local_to_scene = true

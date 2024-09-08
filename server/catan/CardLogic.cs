@@ -23,7 +23,7 @@ namespace shared
             return "";
         }
     }
-    enum BuildingCard{
+    public enum BuildingCard{
         Village, City, Knight, Expansion, Street
     }
 
@@ -92,7 +92,7 @@ namespace shared
         }
     }
 
-    class RessourceCardAmnts{
+    public class RessourceCardAmnts{
         
         public int wheat, iron, sheep, wood, clay; // durch dick ersetzt
         public int total{
@@ -323,3 +323,6 @@ namespace shared
         }
     }
 }
+
+
+public delegate void selectedCallback(string type);

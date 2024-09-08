@@ -110,7 +110,7 @@ public class TCPTestClient{
 }
 
 
-public partial class Main : Node3D
+public partial class Main : Node2D
 {
 	
 	private TCPTestClient client;
@@ -147,25 +147,29 @@ public partial class Main : Node3D
 		while(serverMsgs.Count != 0){
 			ServerToClient serverMessage = serverMsgs.Dequeue();
 			if(serverMessage.kind == "update"){
-			foreach(Card c in marketCards){
-				c.QueueFree();
-			}
-			marketCards.Clear();
-			Schriftrolle sr = serverMessage.schriftrolle;
-			RessourceCardAmnts marketCardsAmnts = new RessourceCardAmnts(sr.markt);
-			foreach(RessourceCard r in Enum.GetValues(typeof(RessourceCard))) {
-				int num = marketCardsAmnts.correspondingAmnt(r);
-				for(int i = 0; i < num; i++){
-					Card cardInstance = card.Instantiate<Card>();
-					AddChild(cardInstance);
-					cardInstance.GlobalTransform = marketStart.GlobalTransform;
-					marketCards.Add(cardInstance);
-					cardInstance.TranslateObjectLocal(new Vector3((marketCards.Count-1)*0.12f,0,0));
-					cardInstance.SetTypeRc(r);
+				//market
+				foreach(Card c in marketCards){
+					c.QueueFree();
 				}
-			}
+				marketCards.Clear();
+				Schriftrolle sr = serverMessage.schriftrolle;
+				RessourceCardAmnts marketCardsAmnts = new RessourceCardAmnts(sr.markt);
+				foreach(RessourceCard r in Enum.GetValues(typeof(RessourceCard))) {
+					int num = marketCardsAmnts.correspondingAmnt(r);
+					for(int i = 0; i < num; i++){
+						Card cardInstance = card.Instantiate<Card>();
+						AddChild(cardInstance);
+						cardInstance.GlobalTransform = marketStart.GlobalTransform;
+						marketCards.Add(cardInstance);
+						cardInstance.MoveLocalX((marketCards.Count-1)*110f);
+						cardInstance.SetTypeRc(r);
+					}
+				}
 
-		}
+				//player
+				testPlayer.SetRes(new RessourceCardAmnts(sr.yourRes));
+				
+			}
 		}
 	}
 
@@ -176,7 +180,7 @@ public partial class Main : Node3D
 	[Export]
 	Player testPlayer;
 	[Export]
-	Node3D marketStart;
+	Node2D marketStart;
 
 
 	private void OnTextEditSet(){
@@ -195,31 +199,4 @@ public partial class Main : Node3D
 
 	private const float RayLength = 1000.0f;
 	private bool doRaycast = false;
-	Vector3 from;
-	Vector3 to;
-
-	public override void _Input(InputEvent @event)
-	{
-		if (@event is InputEventMouseButton eventMouseButton && eventMouseButton.Pressed && eventMouseButton.ButtonIndex == MouseButton.Left)
-		{
-			var camera3D = GetNode<Camera3D>("Camera3D");
-			from = camera3D.ProjectRayOrigin(eventMouseButton.Position);
-			to = from + camera3D.ProjectRayNormal(eventMouseButton.Position) * RayLength;
-			doRaycast = true;
-		}
-	}
-
-	public override void _PhysicsProcess(double delta)
-	{
-		if(!doRaycast) return;
-		doRaycast = false;
-		var spaceState = GetWorld3D().DirectSpaceState;
-		var query = PhysicsRayQueryParameters3D.Create(from, to);
-		var result = spaceState.IntersectRay(query);
-		if(result.ContainsKey("collider")){
-			StaticBody3D col = result["collider"].As<StaticBody3D>();
-			Card card = col.GetParent<Card>();
-			card.Select();
-		}
-	}
 }

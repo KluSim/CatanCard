@@ -380,6 +380,10 @@ namespace catan{
             {
                 Console.WriteLine("Socket exception: " + socketException);
             }
+            catch(InvalidOperationException ioe){
+                Console.WriteLine("Client Disconnect");
+                gameInstances = new Dictionary<int, ServerState>();
+            }
             
         }
 
