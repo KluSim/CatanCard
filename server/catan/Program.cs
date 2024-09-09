@@ -46,6 +46,8 @@ namespace catan{
             switch(bc){
                 case BuildingCard.Village:
                     break;
+                case BuildingCard.Street:
+                    break;
                 case BuildingCard.Knight:
                     break;
                 case BuildingCard.City:
@@ -60,12 +62,14 @@ namespace catan{
             RessourceCardAmnts cost = CardCosts.cardCost(bc);
             if(proposedExpansion == CityExpansion.CityHall) cost.correspondingAmnt(RessourceCard.Iron) += 2;
 
+            // resources match directly
             foreach(RessourceCard r in Enum.GetValues(typeof(RessourceCard))) {
                 int sub = Math.Min(copy.correspondingAmnt(r), cost.correspondingAmnt(r));
                 copy.correspondingAmnt(r) -= sub;
                 cost.correspondingAmnt(r) -= sub;
             }
 
+            // resources replaced by "3 of a kind" trade
             foreach(RessourceCard r1 in Enum.GetValues(typeof(RessourceCard))) {
                 while(cost.correspondingAmnt(r1) != 0){
                     bool threeTradeMade = false;
@@ -79,6 +83,26 @@ namespace catan{
                     }
 
                     if(!threeTradeMade) break;
+                }
+            }
+
+            // resources replaced by university trade
+            
+            if(expansionCards.university > 0) {
+                bool universityTradeMade = false;
+                foreach(RessourceCard r1 in Enum.GetValues(typeof(RessourceCard))) {
+                    if(cost.correspondingAmnt(r1) != 0 && !universityTradeMade){
+                        foreach(RessourceCard r2 in Enum.GetValues(typeof(RessourceCard))){
+                            if(copy.correspondingAmnt(r2) >= 1){
+                                copy.correspondingAmnt(r2) -= 1;
+                                cost.correspondingAmnt(r1) -= 1;
+                                universityTradeMade = true;
+                                break;
+                            }
+                        }
+
+                        if(universityTradeMade) break;
+                    }
                 }
             }
 
@@ -97,6 +121,8 @@ namespace catan{
                 case BuildingCard.Village:
                     break;
                 case BuildingCard.Knight:
+                    break;
+                case BuildingCard.Street:
                     break;
                 case BuildingCard.City:
                     buildingCards.village--;
@@ -173,9 +199,9 @@ namespace catan{
         
         public RessourceCardAmnts getRes() { return resCards; }
 
-        public BuildingCardAmnts getBuildings() {return buildingCards; }
+        public ref BuildingCardAmnts getBuildings() {return ref buildingCards; }
 
-        public ExpansionCardAmnts getExpansions() {return expansionCards; }
+        public ref ExpansionCardAmnts getExpansions() {return ref expansionCards; }
         //TODO: expansion effects, city effects
     }
 
@@ -241,7 +267,7 @@ namespace catan{
             if(numberOfPlayers < 2 || numberOfPlayers > 4) Console.WriteLine("replace me with actual error handling. if you read this, haha your code does the big stupid");
             currentTurnPlayer = 0;
 
-            buildingPile = new BuildingCardAmnts(0,0,0,0,0);
+            buildingPile = new BuildingCardAmnts(10,10,10,10,1);
             expansionPile = new ExpansionCardAmnts(0,0,0,0,0,0); //TODO expansion amounts for n players is wrong, check with actual game
             if(numberOfPlayers == 2){ buildingPile = new BuildingCardAmnts(7,  7,  2, 5, 5); expansionPile = new ExpansionCardAmnts(1,1,1,1,1,1); }
             if(numberOfPlayers == 3){ buildingPile = new BuildingCardAmnts(11, 11, 4, 7, 7); expansionPile = new ExpansionCardAmnts(1,1,1,1,1,1); } 
@@ -277,6 +303,8 @@ namespace catan{
 
                     currentTurnPlayer++;
                     if(currentTurnPlayer >= players.Count) currentTurnPlayer = 0;
+                    players[currentTurnPlayer].startTurn();
+
                     break;
                 case "Buy":
                     string thing = parameters[0];
@@ -299,12 +327,56 @@ namespace catan{
                             buything = BuildingCard.Knight;
                             break;
                     }
+                    if(buildingPile.correspondingAmnt(buything) <= 0 && buything != BuildingCard.Street && buything != BuildingCard.Knight) break;
+
                     RessourceCardAmnts proposed = new RessourceCardAmnts();
                     for(int i = 1; i < parameters.Length; i++){
                         RessourceCard curCard = RessourceCardMths.toEnum(parameters[i]);
                         proposed.correspondingAmnt(curCard)++;
                     }
-                    bool res = current.buyBuilding(buything, proposed, null);
+
+                    if(current.buyBuilding(buything, proposed, null)) {
+                        buildingPile.correspondingAmnt(buything)--;
+                        bool stolen = false;
+                        int stolenPlayer = currentTurnPlayer;
+                        //steal street if none available
+                        if(buything == BuildingCard.Street && buildingPile.correspondingAmnt(buything) < 0){
+                            while(!stolen){
+                                if(CardOfFate) stolenPlayer++;
+                                else stolenPlayer--;
+
+                                if(stolenPlayer < 0) stolenPlayer = players.Count;
+                                if(stolenPlayer >= players.Count) stolenPlayer = 0;
+
+                                int stolenThreshold = 0;
+                                if(players[stolenPlayer].getExpansions().castle > 0) stolenThreshold = 3; 
+
+                                if(players[stolenPlayer].getBuildings().street > stolenThreshold){
+                                    players[stolenPlayer].getBuildings().street--;
+                                    stolen = true;
+                                }
+                            }
+                        }
+                        //steal knight if none available
+                        if(buything == BuildingCard.Knight && buildingPile.correspondingAmnt(buything) < 0){
+                            while(!stolen){
+                                if(CardOfFate) stolenPlayer++;
+                                else stolenPlayer--;
+
+                                if(stolenPlayer < 0) stolenPlayer = players.Count;
+                                if(stolenPlayer >= players.Count) stolenPlayer = 0;
+
+                                int stolenThreshold = 0;
+                                if(players[stolenPlayer].getExpansions().church > 0) stolenThreshold = 1; 
+
+                                if(players[stolenPlayer].getBuildings().knight > stolenThreshold){
+                                    players[stolenPlayer].getBuildings().knight--;
+                                    stolen = true;
+                                }
+                            }
+                        }
+                    }
+
                     break;
                 case "StartPlayerSteal":
                     if(playerTradingAction != 0) break;
