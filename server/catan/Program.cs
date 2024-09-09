@@ -273,7 +273,7 @@ namespace catan{
                         drawncards.correspondingAmnt(drawPile.takeRandomRes()) += 1;
                     }
 
-                    if(!current.endTurn(drawncards)) break; //TODO END GAME
+                    if(current.endTurn(drawncards)) break; //TODO END GAME
 
                     currentTurnPlayer++;
                     if(currentTurnPlayer >= players.Count) currentTurnPlayer = 0;

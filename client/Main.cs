@@ -123,6 +123,8 @@ public partial class Main : Node2D
 	private List<Card> marketCards;
 
 	Queue<ServerToClient> serverMsgs;
+	[Export] Player MainPlayer;
+	[Export] public Player[] otherPlayers;
 	[Export]
 	PackedScene card;
 	
@@ -136,7 +138,7 @@ public partial class Main : Node2D
 		client = new TCPTestClient(this);
 		client.Start();
 		client.gameid = 32;
-		allPlayers[0].init(client);
+		MainPlayer.init(client);
 		//textField.Text = "banana";
 		//Console.WriteLine("Give id of game to join/create");
 		//client.gameid = Int32.Parse(Console.ReadLine());
@@ -149,15 +151,6 @@ public partial class Main : Node2D
 		while(serverMsgs.Count != 0){
 			ServerToClient serverMessage = serverMsgs.Dequeue();
 			if(serverMessage.kind == "update"){
-				Player[] ordered = new Player[4];
-				ordered[0] = allPlayers[client.uid];
-				for(int i = 0; i < 4; i++){
-					ordered[i] = allPlayers[i];
-				}
-				Player tmp = allPlayers[client.uid];
-				allPlayers[client.uid] = ordered[0];
-				ordered[0] = tmp;
-				
 				//market
 				foreach(Card c in marketCards){
 					c.QueueFree();
@@ -178,14 +171,20 @@ public partial class Main : Node2D
 				}
 
 				//player
-				ordered[0].SetRes(new RessourceCardAmnts(sr.yourRes));
+				int count = 0;
+				MainPlayer.SetRes(new RessourceCardAmnts(sr.yourRes));
 				
 				for(int i = 0; i < sr.players.Length; i++){
 					if(sr.players[i] == null) break;
 					int currPlayerID = Int32.Parse(sr.players[i].playerID);
-					if(currPlayerID == client.uid) ordered[0].setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
-					if(i == 0) ordered[client.uid].setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
-					if(currPlayerID != client.uid) ordered[i].SetUnknownRes(Int32.Parse(sr.players[i].numOfCards));
+					if(currPlayerID == client.uid){
+						MainPlayer.setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
+						continue;
+					}
+					
+					otherPlayers[count].setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
+					otherPlayers[count].SetUnknownRes(Int32.Parse(sr.players[i].numOfCards));
+					count++;
 				}
 			}
 		}
@@ -194,9 +193,6 @@ public partial class Main : Node2D
 	public void handleServerMsg(ServerToClient serverMessage){
 		serverMsgs.Enqueue(serverMessage);
 	}
-	
-	[Export]
-	public Player[] allPlayers;
 	
 	[Export]
 	Node2D marketStart;
@@ -239,7 +235,7 @@ public partial class Main : Node2D
 	
 	public void MarketTradeEnd(){
 		Card? selected = null;
-		foreach(Card c in allPlayers[client.uid].resCardObjs){
+		foreach(Card c in MainPlayer.resCardObjs){
 			if(c.isSelected){
 				selected = c;
 				break;
