@@ -22,6 +22,7 @@ public partial class Player : Node2D
 	
 	[Export]
 	public bool isMainPlayer;
+	[Export] public HBoxContainer scroller;
 	
 	public List<Card> resCardObjs;
 	public List<Card> streetCardObjs;
@@ -105,12 +106,19 @@ public partial class Player : Node2D
 		resCards = rca;
 		foreach(Card c in resCardObjs) c.QueueFree();
 		resCardObjs.Clear();
+		foreach(TextureRect n in scroller.GetChildren()){
+			scroller.RemoveChild(n);
+			n.QueueFree();
+		}
 		foreach(RessourceCard r in Enum.GetValues(typeof(RessourceCard))) {
 			int num = resCards.correspondingAmnt(r);
 			for(int i = 0; i < num; i++){
 				Card cardInstance = card.Instantiate<Card>();
 				cardInstance.selectedCallback = GetParent<Main>().playerSelectedCallback;
 				AddChild(cardInstance);
+				TextureRect c = cardInstance.GetChild(0) as TextureRect;
+				cardInstance.RemoveChild(c);
+				scroller.AddChild(c);
 				cardInstance.GlobalTransform = resCardStart.GlobalTransform;
 				cardInstance.setPlayer(this);
 				resCardObjs.Add(cardInstance);

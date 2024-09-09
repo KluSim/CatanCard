@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://wk6olypje462"]
+[gd_scene load_steps=16 format=3 uid="uid://wk6olypje462"]
 
 [ext_resource type="Script" path="res://Card.cs" id="1_oxb0f"]
 [ext_resource type="Texture2D" uid="uid://duhbg3kcqd8uk" path="res://Mats/wood.png" id="2_08lo8"]
@@ -14,12 +14,13 @@
 [ext_resource type="Texture2D" uid="uid://d06m6esh4r4xo" path="res://Mats/street.png" id="11_6dqts"]
 [ext_resource type="Texture2D" uid="uid://cietqvm0hetih" path="res://Mats/unknown_res.png" id="12_t7bxc"]
 [ext_resource type="Texture2D" uid="uid://sesj7kqv34bs" path="res://Mats/victorypoint.png" id="13_a3ht5"]
+[ext_resource type="Texture2D" uid="uid://cuubk7hatvb2h" path="res://Mats/empty.png" id="13_wsevk"]
 
 [node name="Card2d" type="Node2D" node_paths=PackedStringArray("textureSlot", "outline", "victorypoint")]
 script = ExtResource("1_oxb0f")
-textureSlot = NodePath("Card")
-outline = NodePath("OutlineSprite")
-victorypoint = NodePath("VictoryPointSprite")
+textureSlot = NodePath("movit/tex")
+outline = NodePath("movit/outline")
+victorypoint = NodePath("movit/victory")
 wood = ExtResource("2_08lo8")
 clay = ExtResource("3_rdhsc")
 iron = ExtResource("4_kax1u")
@@ -32,15 +33,36 @@ expansion = ExtResource("10_5rt4h")
 street = ExtResource("11_6dqts")
 unknown_res = ExtResource("12_t7bxc")
 
-[node name="Card" type="Sprite2D" parent="."]
-scale = Vector2(0.6, 0.6)
+[node name="movit" type="TextureRect" parent="."]
+clip_contents = true
+offset_right = 100.0
+offset_bottom = 150.0
+texture = ExtResource("13_wsevk")
 
-[node name="OutlineSprite" type="Sprite2D" parent="."]
+[node name="tex" type="TextureRect" parent="movit"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="outline" type="TextureRect" parent="movit"]
 visible = false
-scale = Vector2(0.6, 0.6)
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.96
+anchor_bottom = 0.96
+offset_right = 4.0
+offset_bottom = 6.0
 texture = ExtResource("6_8w7e1")
 
-[node name="VictoryPointSprite" type="Sprite2D" parent="."]
+[node name="victory" type="TextureRect" parent="movit"]
 visible = false
-scale = Vector2(0.6, 0.6)
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.04
+anchor_bottom = 1.013
+offset_right = -4.00001
+offset_bottom = -1.95
 texture = ExtResource("13_a3ht5")
