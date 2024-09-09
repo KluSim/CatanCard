@@ -20,6 +20,9 @@ public partial class Player : Node2D
 	[Export]
 	Node2D knightStart;
 	
+	[Export]
+	public bool isMainPlayer;
+	
 	public List<Card> resCardObjs;
 	public List<Card> streetCardObjs;
 	public List<Card> inhabitCardObjs;
@@ -74,7 +77,7 @@ public partial class Player : Node2D
 				cardInstance.GlobalTransform = tmpCardsStart.GlobalTransform;
 				cardInstance.setPlayer(this);
 				tmpCardObjs.Add(cardInstance);
-				cardInstance.MoveLocalX((tmpCardObjs.Count-1)*110f);
+				cardInstance.MoveLocalX((tmpCardObjs.Count-1)*80f);
 				cardInstance.SetTypeBuy(r);
 				cardInstance.selectedCallback = buySelectedCallback;
 			}
@@ -106,11 +109,12 @@ public partial class Player : Node2D
 			int num = resCards.correspondingAmnt(r);
 			for(int i = 0; i < num; i++){
 				Card cardInstance = card.Instantiate<Card>();
+				cardInstance.selectedCallback = GetParent<Main>().playerSelectedCallback;
 				AddChild(cardInstance);
 				cardInstance.GlobalTransform = resCardStart.GlobalTransform;
 				cardInstance.setPlayer(this);
 				resCardObjs.Add(cardInstance);
-				cardInstance.MoveLocalX((resCardObjs.Count-1)*110f);
+				cardInstance.MoveLocalX((resCardObjs.Count-1)*100f);
 				cardInstance.SetTypeRc(r);
 			}
 		}
@@ -125,7 +129,7 @@ public partial class Player : Node2D
 			cardInstance.GlobalTransform = resCardStart.GlobalTransform;
 			cardInstance.setPlayer(this);
 			resCardObjs.Add(cardInstance);
-			cardInstance.MoveLocalX((resCardObjs.Count-1)*40f);
+			cardInstance.MoveLocalX((resCardObjs.Count-1)*10f);
 			cardInstance.SetTypeUnknown();
 		}
 	}
@@ -146,7 +150,7 @@ public partial class Player : Node2D
 				cardInstance.SetTypeBuy(r);
 				if(r == BuildingCard.Street){
 					cardInstance.GlobalTransform = roadsStart.GlobalTransform;
-					cardInstance.MoveLocalY(-(streetCardObjs.Count)*50f);
+					cardInstance.MoveLocalY(-(streetCardObjs.Count)*30f);
 					cardInstance.ZIndex = -i; 
 					streetCardObjs.Add(cardInstance);
 					if(i % 2 == 1)cardInstance.toggleVictory(true);

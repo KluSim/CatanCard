@@ -162,6 +162,8 @@ public partial class Main : Node2D
 					int num = marketCardsAmnts.correspondingAmnt(r);
 					for(int i = 0; i < num; i++){
 						Card cardInstance = card.Instantiate<Card>();
+						cardInstance.isMarketCard = true;
+						cardInstance.selectedCallback = marketCardSelectedCallback;
 						AddChild(cardInstance);
 						cardInstance.GlobalTransform = marketStart.GlobalTransform;
 						marketCards.Add(cardInstance);
@@ -214,35 +216,32 @@ public partial class Main : Node2D
 		client.SendMessage(cmd);
 	}
 	
-	bool isTrading = false;
-	public void MarketTradeBtn(){
-		if(!isTrading) MarketTradeStart();
-		else MarketTradeEnd();
+	[Export]
+	Button marketBtn;
+	int isTradingMarket = 0;
+
+	public void marketCardSelectedCallback(string type){
+		if(isTradingMarket != 1) return;
+		client.SendMessage("StartMarketTrade|" + type);
+		marketBtn.Text = "Select Your Card";
+		isTradingMarket++;
 	}
 
-	public void MarketTradeStart(){
-		Card? selected = null;
-		foreach(Card c in marketCards){
-			if(c.isSelected){
-				selected = c;
-				break;
-			}
+	public void playerSelectedCallback(string type){
+		if(isTradingMarket == 2){
+			client.SendMessage("EndMarketTrade|"+type);
+			marketBtn.Text = "Market";
+			isTradingMarket = 0;
 		}
-		if(selected == null) return;
-		isTrading = true;
-		client.SendMessage("StartMarketTrade|" + selected.type);
 	}
-	
-	public void MarketTradeEnd(){
-		Card? selected = null;
-		foreach(Card c in MainPlayer.resCardObjs){
-			if(c.isSelected){
-				selected = c;
-				break;
-			}
+	public void MarketTradeBtn(){
+		if(isTradingMarket == 0){
+			foreach(Card c in MainPlayer.resCardObjs) c.SetSelectNoCb(false);
+			foreach(Card c in marketCards) c.SetSelectNoCb(false);
+			marketBtn.Text = "Select Market Card";
+			isTradingMarket = 1;
 		}
-		if(selected == null) return;
-		isTrading = true;
-		client.SendMessage("EndMarketTrade|" + selected.type);
+		//if(!isTradingMarket) MarketTradeStart();
+		//else MarketTradeEnd();
 	}
 }

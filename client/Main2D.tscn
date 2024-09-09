@@ -4,13 +4,15 @@
 [ext_resource type="PackedScene" uid="uid://wk6olypje462" path="res://Card2D.tscn" id="2_ne6ia"]
 [ext_resource type="PackedScene" uid="uid://qf5p6266vbnw" path="res://Player2D.tscn" id="3_6pgo2"]
 
-[node name="Main2d" type="Node2D" node_paths=PackedStringArray("textField", "textEdit", "allPlayers", "marketStart")]
+[node name="Main2d" type="Node2D" node_paths=PackedStringArray("textField", "textEdit", "MainPlayer", "otherPlayers", "marketStart", "marketBtn")]
 script = ExtResource("1_ij0h5")
 textField = NodePath("CanvasLayer/RichTextLabel")
 textEdit = NodePath("CanvasLayer/TextEdit")
+MainPlayer = NodePath("Player2d")
+otherPlayers = [NodePath("Player2d2"), null, null]
 card = ExtResource("2_ne6ia")
-allPlayers = [NodePath("Player2d"), NodePath("Player2d2"), null, null]
 marketStart = NodePath("MarketStart")
+marketBtn = NodePath("CanvasLayer/MarketBtn")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -80,17 +82,17 @@ grow_horizontal = 2
 grow_vertical = 2
 text = "Buy"
 
-[node name="Button" type="Button" parent="CanvasLayer"]
+[node name="MarketBtn" type="Button" parent="CanvasLayer"]
 anchors_preset = -1
-anchor_left = 0.201
-anchor_top = 0.519
-anchor_right = 0.277
-anchor_bottom = 0.566
-offset_left = -167.552
-offset_top = 47.688
-offset_right = -168.104
-offset_bottom = 48.232
-text = "Market (S)"
+anchor_left = 0.09
+anchor_top = 0.593
+anchor_right = 0.167
+anchor_bottom = 0.63
+offset_left = 0.319992
+offset_top = -0.264038
+offset_right = -0.384018
+offset_bottom = 7.75998
+text = "Market"
 
 [node name="Player2d" parent="." node_paths=PackedStringArray("resCardStart", "tmpCardsStart", "habitatStart", "roadsStart", "knightStart") instance=ExtResource("3_6pgo2")]
 resCardStart = NodePath("ResCards")
@@ -98,15 +100,16 @@ tmpCardsStart = NodePath("TmpCars")
 habitatStart = NodePath("Habitat")
 roadsStart = NodePath("Roads")
 knightStart = NodePath("Knight")
+isMainPlayer = true
 
 [node name="Roads" type="Node2D" parent="Player2d"]
 position = Vector2(320, 296)
 
 [node name="TmpCars" type="Node2D" parent="Player2d"]
-position = Vector2(8, 400)
+position = Vector2(51, 437)
 
 [node name="ResCards" type="Node2D" parent="Player2d"]
-position = Vector2(224, 512)
+position = Vector2(192, 592)
 
 [node name="Habitat" type="Node2D" parent="Player2d"]
 position = Vector2(448, 296)
@@ -125,21 +128,21 @@ roadsStart = NodePath("Roads")
 knightStart = NodePath("Knight")
 
 [node name="Roads" type="Node2D" parent="Player2d2"]
-position = Vector2(920, 416)
+position = Vector2(896, 448)
 
 [node name="TmpCars" type="Node2D" parent="Player2d2"]
 position = Vector2(1208, 16)
 
 [node name="ResCards" type="Node2D" parent="Player2d2"]
-position = Vector2(920, 456)
+position = Vector2(896, 576)
 
 [node name="Habitat" type="Node2D" parent="Player2d2"]
-position = Vector2(968, 416)
+position = Vector2(992, 448)
 
 [node name="Knight" type="Node2D" parent="Player2d2"]
-position = Vector2(1016, 416)
+position = Vector2(1088, 448)
 
 [connection signal="button_down" from="CanvasLayer/StartGameBtn" to="." method="OnStartGameBtnDown"]
 [connection signal="button_down" from="CanvasLayer/EndTurnBtn" to="Player2d" method="OnEndTurnBtnDown"]
 [connection signal="button_down" from="CanvasLayer/BuyBtn" to="Player2d" method="OnBuyBtnDown"]
-[connection signal="button_down" from="CanvasLayer/Button" to="." method="MarketTradeBtn"]
+[connection signal="button_down" from="CanvasLayer/MarketBtn" to="." method="MarketTradeBtn"]

@@ -35,8 +35,10 @@ public partial class Card : Node2D
 	
 	[Export]
 	Texture2D unknown_res;
+	
 	public Player player;
 	public bool isSelected = false;
+	public bool isMarketCard = false;
 	public selectedCallback selectedCallback;
 
 	public string type;
@@ -80,6 +82,7 @@ public partial class Card : Node2D
 	public void SetTypeUnknown(){
 		textureSlot.Texture = unknown_res;
 		type = "unknown_res";
+		outline.Show();
 	}
 
 	public void SetTypeBuy(BuildingCard bc){
@@ -108,10 +111,20 @@ public partial class Card : Node2D
 	}
 
 	public void SelectToggle(){
+		if(!isMarketCard && (player == null || !player.isMainPlayer)) return;
 		isSelected = !isSelected;
 		if(isSelected){
 			outline.Show();
 			if(selectedCallback != null)selectedCallback(type);
+		}
+		else
+			outline.Hide();
+	}
+
+	public void SetSelectNoCb(bool s){
+		isSelected = s;
+		if(isSelected){
+			outline.Show();
 		}
 		else
 			outline.Hide();
@@ -122,7 +135,7 @@ public partial class Card : Node2D
 		if (@event is InputEventMouseButton eventMouseButton && eventMouseButton.Pressed && eventMouseButton.ButtonIndex == MouseButton.Left)
 		{
 			InputEventMouseButton e = @event as InputEventMouseButton;
-			if(outline.GetRect().HasPoint(ToLocal(e.Position))){
+			if((outline.GetRect() * new Transform2D(0, outline.Scale, 0, new Vector2())).HasPoint(ToLocal(e.Position))){
 				SelectToggle();
 			}
 		}

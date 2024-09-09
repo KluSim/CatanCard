@@ -3,8 +3,6 @@
 [ext_resource type="Script" path="res://Player.cs" id="1_n2emn"]
 [ext_resource type="PackedScene" uid="uid://wk6olypje462" path="res://Card2D.tscn" id="2_vgare"]
 
-[node name="Player2d" type="Node2D" node_paths=PackedStringArray("resCardStart", "tmpCardsStart")]
+[node name="Player2d" type="Node2D"]
 script = ExtResource("1_n2emn")
 card = ExtResource("2_vgare")
-resCardStart = NodePath("")
-tmpCardsStart = NodePath("")
