@@ -63,6 +63,7 @@ public class TCPTestClient{
 						ServerToClient deCoded = new ServerToClient(deJsoned);
 						if(deCoded.kind == "init"){
 							uid = deCoded.user_id.Value;
+							
 						}
 						main.handleServerMsg(deCoded);	
 					} 				
@@ -135,7 +136,7 @@ public partial class Main : Node2D
 		client = new TCPTestClient(this);
 		client.Start();
 		client.gameid = 32;
-		testPlayer.init(client);
+		allPlayers[0].init(client);
 		//textField.Text = "banana";
 		//Console.WriteLine("Give id of game to join/create");
 		//client.gameid = Int32.Parse(Console.ReadLine());
@@ -148,6 +149,15 @@ public partial class Main : Node2D
 		while(serverMsgs.Count != 0){
 			ServerToClient serverMessage = serverMsgs.Dequeue();
 			if(serverMessage.kind == "update"){
+				Player[] ordered = new Player[4];
+				ordered[0] = allPlayers[client.uid];
+				for(int i = 0; i < 4; i++){
+					ordered[i] = allPlayers[i];
+				}
+				Player tmp = allPlayers[client.uid];
+				allPlayers[client.uid] = ordered[0];
+				ordered[0] = tmp;
+				
 				//market
 				foreach(Card c in marketCards){
 					c.QueueFree();
@@ -168,18 +178,14 @@ public partial class Main : Node2D
 				}
 
 				//player
-				testPlayer.SetRes(new RessourceCardAmnts(sr.yourRes));
-				for(int i = 0; i < sr.players.Length; i++){
-					if(sr.players[i] == null) break;
-					if(Int32.Parse(sr.players[i].playerID) != client.uid) continue;
-					testPlayer.setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
-				}
+				ordered[0].SetRes(new RessourceCardAmnts(sr.yourRes));
 				
 				for(int i = 0; i < sr.players.Length; i++){
 					if(sr.players[i] == null) break;
-					if(Int32.Parse(sr.players[i].playerID) == client.uid) continue;
-					otherPlayers[i].setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
-					otherPlayers[i].SetUnknownRes(Int32.Parse(sr.players[i].numOfCards));
+					int currPlayerID = Int32.Parse(sr.players[i].playerID);
+					if(currPlayerID == client.uid) ordered[0].setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
+					if(i == 0) ordered[client.uid].setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
+					if(currPlayerID != client.uid) ordered[i].SetUnknownRes(Int32.Parse(sr.players[i].numOfCards));
 				}
 			}
 		}
@@ -188,16 +194,15 @@ public partial class Main : Node2D
 	public void handleServerMsg(ServerToClient serverMessage){
 		serverMsgs.Enqueue(serverMessage);
 	}
-
-	[Export]
-	Player testPlayer;
 	
 	[Export]
-	Player[] otherPlayers;
+	public Player[] allPlayers;
 	
 	[Export]
 	Node2D marketStart;
-
+	private void OnStartGameBtnDown(){
+		client.SendMessage("StartGame|");
+	}
 
 	private void OnTextEditSet(){
 		string curText = textEdit.Text;
@@ -234,7 +239,7 @@ public partial class Main : Node2D
 	
 	public void MarketTradeEnd(){
 		Card? selected = null;
-		foreach(Card c in testPlayer.resCardObjs){
+		foreach(Card c in allPlayers[client.uid].resCardObjs){
 			if(c.isSelected){
 				selected = c;
 				break;

@@ -19,7 +19,7 @@ public partial class Player : Node2D
 	Node2D roadsStart;
 	[Export]
 	Node2D knightStart;
-
+	
 	public List<Card> resCardObjs;
 	public List<Card> streetCardObjs;
 	public List<Card> inhabitCardObjs;
@@ -54,14 +54,13 @@ public partial class Player : Node2D
 	public override void _Process(double delta)
 	{
 	}
-	private void OnStartGameBtnDown(){
-		client.SendMessage("StartGame|");
-	}
+	
 	private void OnEndTurnBtnDown(){
 		client.SendMessage("EndTurn|");
 	}
 
 	public void buySelectedCallback(string type){
+		if(client == null) return;
 		string resources = type;
 		foreach(Card c in resCardObjs) if(c.isSelected) resources += "," + c.type;
 		client.SendMessage("Buy|"+resources);

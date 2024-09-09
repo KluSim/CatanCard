@@ -4,13 +4,12 @@
 [ext_resource type="PackedScene" uid="uid://wk6olypje462" path="res://Card2D.tscn" id="2_ne6ia"]
 [ext_resource type="PackedScene" uid="uid://qf5p6266vbnw" path="res://Player2D.tscn" id="3_6pgo2"]
 
-[node name="Main2d" type="Node2D" node_paths=PackedStringArray("textField", "textEdit", "testPlayer", "otherPlayers", "marketStart")]
+[node name="Main2d" type="Node2D" node_paths=PackedStringArray("textField", "textEdit", "allPlayers", "marketStart")]
 script = ExtResource("1_ij0h5")
 textField = NodePath("CanvasLayer/RichTextLabel")
 textEdit = NodePath("CanvasLayer/TextEdit")
 card = ExtResource("2_ne6ia")
-testPlayer = NodePath("Player2d")
-otherPlayers = [NodePath("Player2d2")]
+allPlayers = [NodePath("Player2d"), NodePath("Player2d2"), null, null]
 marketStart = NodePath("MarketStart")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
@@ -140,7 +139,7 @@ position = Vector2(968, 416)
 [node name="Knight" type="Node2D" parent="Player2d2"]
 position = Vector2(1016, 416)
 
-[connection signal="button_down" from="CanvasLayer/StartGameBtn" to="Player2d" method="OnStartGameBtnDown"]
+[connection signal="button_down" from="CanvasLayer/StartGameBtn" to="." method="OnStartGameBtnDown"]
 [connection signal="button_down" from="CanvasLayer/EndTurnBtn" to="Player2d" method="OnEndTurnBtnDown"]
 [connection signal="button_down" from="CanvasLayer/BuyBtn" to="Player2d" method="OnBuyBtnDown"]
 [connection signal="button_down" from="CanvasLayer/Button" to="." method="MarketTradeBtn"]
