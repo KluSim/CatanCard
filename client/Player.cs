@@ -116,6 +116,20 @@ public partial class Player : Node2D
 			}
 		}
 	}
+	
+	public void SetUnknownRes(int num){
+		foreach(Card c in resCardObjs) c.QueueFree();
+		resCardObjs.Clear();
+		for(int i = 0; i < num; i++){
+			Card cardInstance = card.Instantiate<Card>();
+			AddChild(cardInstance);
+			cardInstance.GlobalTransform = resCardStart.GlobalTransform;
+			cardInstance.setPlayer(this);
+			resCardObjs.Add(cardInstance);
+			cardInstance.MoveLocalX((resCardObjs.Count-1)*40f);
+			cardInstance.SetTypeUnknown();
+		}
+	}
 
 	public void setBuildings(BuildingCardAmnts bca){
 		buildCards = bca;

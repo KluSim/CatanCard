@@ -265,6 +265,13 @@ namespace shared
         public string expansions {get; set;}
         public string[] leftBuys {get; set;}//list of ints
         public string yourRes {get; set;}
+        
+        public PlayerInformation[] players {get; set;}
+    }
+
+    public class PlayerInformation{
+        public string numOfCards {get; set;}
+        public string playerID {get; set;}
         public string yourBuildings {get; set;}
         public string yourExpansions {get; set;}
     }

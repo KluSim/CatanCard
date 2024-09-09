@@ -32,6 +32,9 @@ public partial class Card : Node2D
 	Texture2D expansion;
 	[Export]
 	Texture2D street;
+	
+	[Export]
+	Texture2D unknown_res;
 	public Player player;
 	public bool isSelected = false;
 	public selectedCallback selectedCallback;
@@ -72,7 +75,11 @@ public partial class Card : Node2D
 				type = "Wheat";
 				break;
 		}
-		
+	}
+	
+	public void SetTypeUnknown(){
+		textureSlot.Texture = unknown_res;
+		type = "unknown_res";
 	}
 
 	public void SetTypeBuy(BuildingCard bc){

@@ -14,9 +14,9 @@ namespace catan{
 
 
     class PlayerState{
-        int playerID;
+        public int playerID;
         int victoryPoints;
-        RessourceCardAmnts resCards;
+        public RessourceCardAmnts resCards;
         BuildingCardAmnts buildingCards;
         ExpansionCardAmnts expansionCards;
         Dictionary<BuildingCard, bool> canBuild;
@@ -218,11 +218,22 @@ namespace catan{
             RessourceCardAmnts playerRes = players[player].getRes(); 
             sr.yourRes = playerRes.stringify();
 
-            BuildingCardAmnts playerBuilds = players[player].getBuildings();
-            sr.yourBuildings = playerBuilds.stringify();
+            sr.players = new PlayerInformation[4];
+            for(int i = 0; i < players.Count; ++i) {
+            PlayerInformation playerInformation = new PlayerInformation();
 
-            ExpansionCardAmnts playerExpansions = players[player].getExpansions();
-            sr.yourExpansions = playerExpansions.stringify();
+            playerInformation.playerID = "" + players[i].playerID;
+            playerInformation.numOfCards = "" + players[i].resCards.total;
+
+            BuildingCardAmnts playerBuilds = players[i].getBuildings();
+            playerInformation.yourBuildings = playerBuilds.stringify();
+
+            ExpansionCardAmnts playerExpansions = players[i].getExpansions();
+            playerInformation.yourExpansions = playerExpansions.stringify();
+            
+            sr.players[i] = playerInformation;
+            }
+            
             return sr;
         }
 
@@ -326,8 +337,8 @@ namespace catan{
           //  }
             string jsonString = JsonSerializer.Serialize(new ServerToClient(numberOfPlayers).decode());
             stream.WriteAsync(Encoding.ASCII.GetBytes(jsonString));
-            numberOfPlayers++;
             players.Add(new PlayerState(numberOfPlayers, stream));
+            numberOfPlayers++;
             return numberOfPlayers;
         }
 

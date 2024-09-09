@@ -4,12 +4,13 @@
 [ext_resource type="PackedScene" uid="uid://wk6olypje462" path="res://Card2D.tscn" id="2_ne6ia"]
 [ext_resource type="PackedScene" uid="uid://qf5p6266vbnw" path="res://Player2D.tscn" id="3_6pgo2"]
 
-[node name="Main2d" type="Node2D" node_paths=PackedStringArray("textField", "textEdit", "testPlayer", "marketStart")]
+[node name="Main2d" type="Node2D" node_paths=PackedStringArray("textField", "textEdit", "testPlayer", "otherPlayers", "marketStart")]
 script = ExtResource("1_ij0h5")
 textField = NodePath("CanvasLayer/RichTextLabel")
 textEdit = NodePath("CanvasLayer/TextEdit")
 card = ExtResource("2_ne6ia")
 testPlayer = NodePath("Player2d")
+otherPlayers = [NodePath("Player2d2")]
 marketStart = NodePath("MarketStart")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
@@ -93,29 +94,51 @@ offset_bottom = 48.232
 text = "Market (S)"
 
 [node name="Player2d" parent="." node_paths=PackedStringArray("resCardStart", "tmpCardsStart", "habitatStart", "roadsStart", "knightStart") instance=ExtResource("3_6pgo2")]
-resCardStart = NodePath("../ResCards")
-tmpCardsStart = NodePath("../TmpCars")
-habitatStart = NodePath("../Habitat")
-roadsStart = NodePath("../Roads")
-knightStart = NodePath("../Knight")
+resCardStart = NodePath("ResCards")
+tmpCardsStart = NodePath("TmpCars")
+habitatStart = NodePath("Habitat")
+roadsStart = NodePath("Roads")
+knightStart = NodePath("Knight")
+
+[node name="Roads" type="Node2D" parent="Player2d"]
+position = Vector2(320, 296)
+
+[node name="TmpCars" type="Node2D" parent="Player2d"]
+position = Vector2(8, 400)
+
+[node name="ResCards" type="Node2D" parent="Player2d"]
+position = Vector2(224, 512)
+
+[node name="Habitat" type="Node2D" parent="Player2d"]
+position = Vector2(448, 296)
+
+[node name="Knight" type="Node2D" parent="Player2d"]
+position = Vector2(576, 296)
 
 [node name="MarketStart" type="Node2D" parent="."]
 position = Vector2(328, 64)
 
-[node name="Roads" type="Node2D" parent="."]
-position = Vector2(320, 296)
+[node name="Player2d2" parent="." node_paths=PackedStringArray("resCardStart", "tmpCardsStart", "habitatStart", "roadsStart", "knightStart") instance=ExtResource("3_6pgo2")]
+resCardStart = NodePath("ResCards")
+tmpCardsStart = NodePath("TmpCars")
+habitatStart = NodePath("Habitat")
+roadsStart = NodePath("Roads")
+knightStart = NodePath("Knight")
 
-[node name="TmpCars" type="Node2D" parent="."]
-position = Vector2(8, 400)
+[node name="Roads" type="Node2D" parent="Player2d2"]
+position = Vector2(920, 416)
 
-[node name="ResCards" type="Node2D" parent="."]
-position = Vector2(224, 512)
+[node name="TmpCars" type="Node2D" parent="Player2d2"]
+position = Vector2(1208, 16)
 
-[node name="Habitat" type="Node2D" parent="."]
-position = Vector2(448, 296)
+[node name="ResCards" type="Node2D" parent="Player2d2"]
+position = Vector2(920, 456)
 
-[node name="Knight" type="Node2D" parent="."]
-position = Vector2(576, 296)
+[node name="Habitat" type="Node2D" parent="Player2d2"]
+position = Vector2(968, 416)
+
+[node name="Knight" type="Node2D" parent="Player2d2"]
+position = Vector2(1016, 416)
 
 [connection signal="button_down" from="CanvasLayer/StartGameBtn" to="Player2d" method="OnStartGameBtnDown"]
 [connection signal="button_down" from="CanvasLayer/EndTurnBtn" to="Player2d" method="OnEndTurnBtnDown"]

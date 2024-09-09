@@ -38,7 +38,7 @@ public class TCPTestClient{
 	private void ListenForData() { 
 		while(true){		
 		try { 			
-			socketConnection = new TcpClient("localhost", 8052);
+			socketConnection = new TcpClient("192.168.178.36", 8052);
 			Byte[] bytes = new Byte[1024];             
 			while (true) { 				
 				// Get a stream object for reading 				
@@ -169,7 +169,18 @@ public partial class Main : Node2D
 
 				//player
 				testPlayer.SetRes(new RessourceCardAmnts(sr.yourRes));
-				testPlayer.setBuildings(new BuildingCardAmnts(sr.yourBuildings));
+				for(int i = 0; i < sr.players.Length; i++){
+					if(sr.players[i] == null) break;
+					if(Int32.Parse(sr.players[i].playerID) != client.uid) continue;
+					testPlayer.setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
+				}
+				
+				for(int i = 0; i < sr.players.Length; i++){
+					if(sr.players[i] == null) break;
+					if(Int32.Parse(sr.players[i].playerID) == client.uid) continue;
+					otherPlayers[i].setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
+					otherPlayers[i].SetUnknownRes(Int32.Parse(sr.players[i].numOfCards));
+				}
 			}
 		}
 	}
@@ -180,6 +191,10 @@ public partial class Main : Node2D
 
 	[Export]
 	Player testPlayer;
+	
+	[Export]
+	Player[] otherPlayers;
+	
 	[Export]
 	Node2D marketStart;
 
