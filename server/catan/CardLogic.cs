@@ -271,52 +271,49 @@ namespace shared
 
     public class PlayerInformation{
         public string numOfCards {get; set;}
-        public string playerID {get; set;}
+        public string playerName {get; set;}
         public string yourBuildings {get; set;}
         public string yourExpansions {get; set;}
     }
     class ClientToServer{
         public int game_id;
         public string msg;
-        public int? user_id;
+        public string playerName;
         public ClientToServer(int gid){
             game_id = gid;
             msg = "connectmepls";
         }
         public ClientToServer(int gid, int uid, string msg){
             game_id = gid;
-            user_id = uid;
             this.msg =  msg;
         }
         public ClientToServer(ClientToServerDecode d){
             game_id = Int32.Parse(d.game_id);
             msg = d.msg;
-            user_id = d.user_id == null ? null : Int32.Parse(d.user_id);
+            playerName = d.playerName;
         }
 
         public ClientToServerDecode decode(){
-            return new ClientToServerDecode(game_id.ToString(), msg, user_id == null ? null : user_id.ToString());
+            return new ClientToServerDecode(game_id.ToString(), msg, playerName);
         }
     }
 
     class ClientToServerDecode{
         public string game_id{get;set;}
         public string msg{get;set;}
-        public string? user_id{get;set;}
+        public string playerName{get;set;}
         public ClientToServerDecode() {}
 
-        public ClientToServerDecode(string g, string m, string? u){
-            game_id = g; msg = m; user_id = u;
+        public ClientToServerDecode(string g, string m, string u){
+            game_id = g; msg = m; playerName = u;
         }
     }
 
     public class ServerToClient{
         public string kind;
         public Schriftrolle? schriftrolle;
-        public int? user_id;
 
-        public ServerToClient(int uid){
-            user_id = uid;
+        public ServerToClient(){
             kind = "init";
         }
 
@@ -327,23 +324,20 @@ namespace shared
         public ServerToClient(ServerToClientDecode d){
             kind = d.kind;
             schriftrolle = d.schriftrolle;
-            user_id = d.user_id == null ? null : Int32.Parse(d.user_id);
         }
 
         public ServerToClientDecode decode(){
-            return new ServerToClientDecode(kind, schriftrolle, user_id == null ? null : user_id.ToString());
+            return new ServerToClientDecode(kind, schriftrolle);
         }
     }
 
     public class ServerToClientDecode{
         public string kind{get;set;}
         public Schriftrolle? schriftrolle{get;set;}
-        public string? user_id{get;set;}
         public ServerToClientDecode(){}
 
-
-        public ServerToClientDecode(string k, Schriftrolle? sr, string? u){
-            kind = k; schriftrolle = sr; user_id =u;
+        public ServerToClientDecode(string k, Schriftrolle? sr){
+            kind = k; schriftrolle = sr;
         }
     }
 }

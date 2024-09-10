@@ -14,7 +14,7 @@ namespace catan{
 
 
     class PlayerState{
-        public int playerID;
+        public string playerName;
         int victoryPoints;
         public RessourceCardAmnts resCards;
         BuildingCardAmnts buildingCards;
@@ -22,10 +22,11 @@ namespace catan{
         Dictionary<BuildingCard, bool> canBuild;
         int availableTrades = 0;
         public NetworkStream stream;
+        public bool isConnected = true;
 
-        public PlayerState(int playerID, NetworkStream ns){
+        public PlayerState(string playerName, NetworkStream ns){
             this.stream = ns;
-            this.playerID = playerID;
+            this.playerName = playerName;
             //resCards = new RessourceCardAmnts();
             buildingCards = new BuildingCardAmnts(1,0,0,0,1);
             expansionCards = new ExpansionCardAmnts(0,0,0,0,0,0);
@@ -211,7 +212,8 @@ namespace catan{
         string[] adminCommands = {"StartGame"};
         List<PlayerState> players;
         int numberOfPlayers = 0;
-        int currentTurnPlayer;
+        bool gameStarted = false;
+        int currentTurnPlayer; //Index into players
         int playerTradingAction = 0; // 0=nothing, 1 = isStealing,  2 = isTrading, 4 = isPicking
         int targetPlayer;
         RessourceCardAmnts drawPile;
@@ -246,18 +248,18 @@ namespace catan{
 
             sr.players = new PlayerInformation[4];
             for(int i = 0; i < players.Count; ++i) {
-            PlayerInformation playerInformation = new PlayerInformation();
+                PlayerInformation playerInformation = new PlayerInformation();
 
-            playerInformation.playerID = "" + players[i].playerID;
-            playerInformation.numOfCards = "" + players[i].resCards.total;
+                playerInformation.playerName = "" + players[i].playerName;
+                playerInformation.numOfCards = "" + players[i].resCards.total;
 
-            BuildingCardAmnts playerBuilds = players[i].getBuildings();
-            playerInformation.yourBuildings = playerBuilds.stringify();
+                BuildingCardAmnts playerBuilds = players[i].getBuildings();
+                playerInformation.yourBuildings = playerBuilds.stringify();
 
-            ExpansionCardAmnts playerExpansions = players[i].getExpansions();
-            playerInformation.yourExpansions = playerExpansions.stringify();
-            
-            sr.players[i] = playerInformation;
+                ExpansionCardAmnts playerExpansions = players[i].getExpansions();
+                playerInformation.yourExpansions = playerExpansions.stringify();
+                
+                sr.players[i] = playerInformation;
             }
             
             return sr;
@@ -283,6 +285,7 @@ namespace catan{
             PlayerState current = players[currentTurnPlayer];
             switch(action){
                 case "StartGame":
+                    if(gameStarted) break;
                     init();
                     for(int i = 0; i < numberOfPlayers; i++){
                         RessourceCardAmnts initCards = new RessourceCardAmnts();
@@ -291,6 +294,7 @@ namespace catan{
                         initCards.correspondingAmnt(drawPile.takeRandomRes())++;
                         players[i].init(initCards);
                     }
+                    gameStarted = true;
                     break;
                 case "EndTurn":
                     if(playerTradingAction != 0) break;
@@ -403,33 +407,55 @@ namespace catan{
             }
         }
 
-        public int connectant(NetworkStream stream){
-            //if(clients.ContainsKey(stream)){
-           //     Console.WriteLine("Returning connection, but no user id, dafuq");//TODO handle that
-          //  }
-            string jsonString = JsonSerializer.Serialize(new ServerToClient(numberOfPlayers).decode());
-            stream.WriteAsync(Encoding.ASCII.GetBytes(jsonString));
-            players.Add(new PlayerState(numberOfPlayers, stream));
-            numberOfPlayers++;
-            return numberOfPlayers;
+        public int connectant(NetworkStream stream, ClientToServer msg){
+            int returningPlayerIndex = players.FindIndex(player  => player.playerName == msg.playerName && !player.isConnected);
+            if(gameStarted && returningPlayerIndex != -1){//only accept returning players
+                players[returningPlayerIndex].isConnected = true;
+                players[returningPlayerIndex].stream = stream;
+                inform(msg);
+                return numberOfPlayers;
+            }
+            else{ //accept everyone, but also reconnects
+                if(returningPlayerIndex == -1){
+                    string jsonString = JsonSerializer.Serialize(new ServerToClient().decode());
+                    stream.WriteAsync(Encoding.ASCII.GetBytes(jsonString));
+                    players.Add(new PlayerState(msg.playerName, stream));
+                    numberOfPlayers++;
+                    return numberOfPlayers;
+                }
+                else{
+                    players[returningPlayerIndex].isConnected = true;
+                    players[returningPlayerIndex].stream = stream;
+                    inform(msg);
+                    return numberOfPlayers;
+                }
+            }
+            
         }
 
         //Client tells us smth
         public void inform(ClientToServer msg){
-            if(msg.user_id.Value != currentTurnPlayer) return;
-
+            int playerIndex = players.FindIndex(player  => player.playerName == msg.playerName);
             string[] splited = msg.msg.Split('|');
             string[] parameters = splited[1].Split(',');
-            if(msg.user_id.Value != 0 && adminCommands.Contains(splited[0])) return;
+
+            if(players[currentTurnPlayer].playerName != msg.playerName)
+                if (!(playerIndex == 0 && adminCommands.Contains(splited[0]))) return;
+
             ActionExecutor(splited[0], parameters);
 
-            Console.WriteLine(msg.user_id+": "+msg.msg);
+            Console.WriteLine(msg.playerName+": "+msg.msg);
             for(int i = 0; i < numberOfPlayers; ++i){
                 ServerToClient toClient = new ServerToClient(stateToSend(i));
                 string jsonString = JsonSerializer.Serialize(toClient.decode());
                 Console.WriteLine(jsonString);
                 players[i].stream.WriteAsync(Encoding.ASCII.GetBytes(jsonString));
             }
+        }
+
+        public void playerDisconnected(NetworkStream stream){
+            int playerIndex = players.FindIndex(player  => player.stream == stream);
+            players[playerIndex].isConnected = false;
         }
     }
   
@@ -463,8 +489,12 @@ namespace catan{
                 server.BeginAcceptTcpClient(handle_connection, server); //reopen for new connections
 
                 Byte[] bytes = new Byte[65535];
+                NetworkStream? theStream = null;
+                int theGameId = -1;
+                bool firstMsg = true;
                 while (true)
                 {
+                    try{
                     // Get a stream object for reading 				
                     using (NetworkStream stream = socketConnection.GetStream())
                     {
@@ -472,6 +502,7 @@ namespace catan{
                         // Read incomming stream into byte arrary. BLOCKING!!			
                         while ((length = stream.Read(bytes, 0, bytes.Length)) != 0)
                         {
+                            theStream = stream;
                             var incommingData = new byte[length];
                             Array.Copy(bytes, 0, incommingData, 0, length);
                             // Convert byte array to string message. 						
@@ -487,15 +518,32 @@ namespace catan{
                             }
                             if(deJsoned == null) continue;
                             ClientToServer decoded = new ClientToServer(deJsoned);
+
+                            if(decoded.game_id < 0) return; //TODO tell player to fuck of
+                            if(theGameId != -1) theGameId = decoded.game_id;
+                            if(theGameId != decoded.game_id) return;//TODO tell player to fuck of
+
                             if(!gameInstances.ContainsKey(decoded.game_id)){
                                 gameInstances[decoded.game_id] = new ServerState();
                             }
                             ServerState thisgame = gameInstances[decoded.game_id];
-                            if(decoded.user_id == null)
-                                thisgame.connectant(stream);
+                            if(firstMsg)
+                                thisgame.connectant(stream, decoded);
                             else
                                 thisgame.inform(decoded);
+                            firstMsg = false;
                         }  
+                    }
+                    }
+                    catch(InvalidOperationException ioe){
+                        Console.WriteLine("Client Disconnect");
+                        if(theStream!=null)gameInstances[theGameId].playerDisconnected(theStream);
+                        //gameInstances = new Dictionary<int, ServerState>();
+                    }
+                    catch(IOException ioe){
+                        Console.WriteLine("Client Disconnect");
+                        if(theStream!=null)gameInstances[theGameId].playerDisconnected(theStream);
+                        //gameInstances = new Dictionary<int, ServerState>();
                     }
                 }
             }
@@ -503,14 +551,7 @@ namespace catan{
             {
                 Console.WriteLine("Socket exception: " + socketException);
             }
-            catch(InvalidOperationException ioe){
-                Console.WriteLine("Client Disconnect");
-                gameInstances = new Dictionary<int, ServerState>();
-            }
-            catch(IOException ioe){
-                Console.WriteLine("Client Disconnect");
-                gameInstances = new Dictionary<int, ServerState>();
-            }
+            
             
         }
 
