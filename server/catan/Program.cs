@@ -412,7 +412,11 @@ namespace catan{
             if(gameStarted && returningPlayerIndex != -1){//only accept returning players
                 players[returningPlayerIndex].isConnected = true;
                 players[returningPlayerIndex].stream = stream;
-                inform(msg);
+                //inform(msg);
+                ServerToClient toClient = new ServerToClient(stateToSend(returningPlayerIndex), true);
+                string jsonString = JsonSerializer.Serialize(toClient.decode());
+                Console.WriteLine(jsonString);
+                players[returningPlayerIndex].stream.WriteAsync(Encoding.ASCII.GetBytes(jsonString));
                 return numberOfPlayers;
             }
             else{ //accept everyone, but also reconnects
@@ -426,7 +430,11 @@ namespace catan{
                 else{
                     players[returningPlayerIndex].isConnected = true;
                     players[returningPlayerIndex].stream = stream;
-                    inform(msg);
+                    //inform(msg);
+                    ServerToClient toClient = new ServerToClient(stateToSend(returningPlayerIndex), false);
+                    string jsonString = JsonSerializer.Serialize(toClient.decode());
+                    Console.WriteLine(jsonString);
+                    players[returningPlayerIndex].stream.WriteAsync(Encoding.ASCII.GetBytes(jsonString));
                     return numberOfPlayers;
                 }
             }
@@ -446,7 +454,7 @@ namespace catan{
 
             Console.WriteLine(msg.playerName+": "+msg.msg);
             for(int i = 0; i < numberOfPlayers; ++i){
-                ServerToClient toClient = new ServerToClient(stateToSend(i));
+                ServerToClient toClient = new ServerToClient(stateToSend(i), splited[0] == "StartGame");
                 string jsonString = JsonSerializer.Serialize(toClient.decode());
                 Console.WriteLine(jsonString);
                 players[i].stream.WriteAsync(Encoding.ASCII.GetBytes(jsonString));
@@ -520,7 +528,7 @@ namespace catan{
                             ClientToServer decoded = new ClientToServer(deJsoned);
 
                             if(decoded.game_id < 0) return; //TODO tell player to fuck of
-                            if(theGameId != -1) theGameId = decoded.game_id;
+                            if(theGameId == -1) theGameId = decoded.game_id;
                             if(theGameId != decoded.game_id) return;//TODO tell player to fuck of
 
                             if(!gameInstances.ContainsKey(decoded.game_id)){
@@ -538,11 +546,13 @@ namespace catan{
                     catch(InvalidOperationException ioe){
                         Console.WriteLine("Client Disconnect");
                         if(theStream!=null)gameInstances[theGameId].playerDisconnected(theStream);
+                        return;
                         //gameInstances = new Dictionary<int, ServerState>();
                     }
                     catch(IOException ioe){
                         Console.WriteLine("Client Disconnect");
                         if(theStream!=null)gameInstances[theGameId].playerDisconnected(theStream);
+                        return;
                         //gameInstances = new Dictionary<int, ServerState>();
                     }
                 }

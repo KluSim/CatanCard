@@ -315,11 +315,11 @@ namespace shared
         public Schriftrolle? schriftrolle;
 
         public ServerToClient(){
-            kind = "init";
+            kind = "recognize";
         }
 
-        public ServerToClient(Schriftrolle sr){
-            kind = "update";
+        public ServerToClient(Schriftrolle sr, bool reconnect = false){
+            kind = reconnect ? "init" : "update";
             schriftrolle = sr;
         }
         public ServerToClient(ServerToClientDecode d){
