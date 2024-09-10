@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://wk6olypje462" path="res://Card2D.tscn" id="2_ne6ia"]
 [ext_resource type="PackedScene" uid="uid://qf5p6266vbnw" path="res://Player2D.tscn" id="3_6pgo2"]
 
-[node name="Main2d" type="Node2D" node_paths=PackedStringArray("textField", "textEdit", "MainPlayer", "otherPlayers", "marketStart", "marketBtn")]
+[node name="Main2d" type="Node2D" node_paths=PackedStringArray("textField", "textEdit", "MainPlayer", "otherPlayers", "marketStart", "marketBtn", "IPEdit", "GameIDEdit", "UserNameEdit", "ConnectionInterface", "GameInterface")]
 script = ExtResource("1_ij0h5")
 textField = NodePath("CanvasLayer/RichTextLabel")
 textEdit = NodePath("CanvasLayer/TextEdit")
@@ -12,7 +12,12 @@ MainPlayer = NodePath("Player2d")
 otherPlayers = []
 card = ExtResource("2_ne6ia")
 marketStart = NodePath("MarketStart")
-marketBtn = NodePath("")
+marketBtn = NodePath("CanvasLayer/InteractionPanel/TradeInterface/MarketTradeButton")
+IPEdit = NodePath("CanvasLayer/InteractionPanel/ConnectionInterface/IPEdit")
+GameIDEdit = NodePath("CanvasLayer/InteractionPanel/ConnectionInterface/GameIDEdit")
+UserNameEdit = NodePath("CanvasLayer/InteractionPanel/ConnectionInterface/UserNameEdit")
+ConnectionInterface = NodePath("CanvasLayer/InteractionPanel/ConnectionInterface")
+GameInterface = NodePath("CanvasLayer/InteractionPanel/GameInterface")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -39,13 +44,13 @@ metadata/_edit_use_anchors_ = true
 
 [node name="ScrollContainer" type="ScrollContainer" parent="CanvasLayer"]
 anchors_preset = -1
-anchor_left = 0.146
+anchor_left = 0.265
 anchor_top = 0.741
-anchor_right = 0.722
+anchor_right = 0.734
 anchor_bottom = 0.975
-offset_left = -0.192017
+offset_left = -0.280029
 offset_top = -0.16803
-offset_right = 0.25592
+offset_right = 0.431946
 offset_bottom = 0.200012
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/ScrollContainer"]

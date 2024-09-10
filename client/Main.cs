@@ -39,7 +39,7 @@ public class TCPTestClient{
 	private void ListenForData() { 
 		while(true){		
 		try { 			
-			socketConnection = new TcpClient("192.168.178.36", 8052);
+			socketConnection = new TcpClient("192.168.178.43", 8052);
 			Byte[] bytes = new Byte[1024];             
 			while (true) { 				
 				// Get a stream object for reading 				
@@ -62,10 +62,6 @@ public class TCPTestClient{
 						}
 						if(deJsoned == null) continue;
 						ServerToClient deCoded = new ServerToClient(deJsoned);
-						if(deCoded.kind == "init"){
-							uid = deCoded.user_id.Value;
-							
-						}
 						main.handleServerMsg(deCoded);	
 					} 				
 				} 			
@@ -88,16 +84,10 @@ public class TCPTestClient{
 			NetworkStream stream = socketConnection.GetStream(); 			
 			if (stream.CanWrite) {      
 				string clientMessage = "";
-				if (uid != -1) {
-					ClientToServer clientToServer = new ClientToServer(gameid, uid, msg);           
-					clientMessage = JsonSerializer.Serialize<ClientToServerDecode>(clientToServer.decode());	
-				}
-				else {
-					ClientToServer clientToServer = new ClientToServer(gameid);           
-					clientMessage = JsonSerializer.Serialize<ClientToServerDecode>(clientToServer.decode());
-				}
+				ClientToServer clientToServer = new ClientToServer(gameid, msg, username);           
+				clientMessage = JsonSerializer.Serialize<ClientToServerDecode>(clientToServer.decode());
 				// Convert string message to byte array.                 
-				byte[] clientMessageAsByteArray = Encoding.ASCII.GetBytes(clientMessage); 				
+				byte[] clientMessageAsByteArray = Encoding.ASCII.GetBytes(clientMessage);
 				// Write byte array to socketConnection stream.                 
 				stream.Write(clientMessageAsByteArray, 0, clientMessageAsByteArray.Length);                 
 				Console.WriteLine("Sent: "+clientMessage);           
@@ -142,7 +132,12 @@ public partial class Main : Node2D
 	{
 		while(serverMsgs.Count != 0){
 			ServerToClient serverMessage = serverMsgs.Dequeue();
-			if(serverMessage.kind == "update"){
+			if(serverMessage.kind == "update" || serverMessage.kind == "init"){
+				if(serverMessage.kind == "init"){
+					ConnectionInterface.Hide();
+					GameInterface.Show();
+				}
+				
 				//market
 				foreach(Card c in marketCards){
 					c.QueueFree();
@@ -170,8 +165,8 @@ public partial class Main : Node2D
 				
 				for(int i = 0; i < sr.players.Length; i++){
 					if(sr.players[i] == null) break;
-					int currPlayerID = Int32.Parse(sr.players[i].playerID);
-					if(currPlayerID == client.uid){
+					string currPlayerName = sr.players[i].playerName;
+					if(currPlayerName == client.username){
 						MainPlayer.setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
 						continue;
 					}
@@ -239,6 +234,8 @@ public partial class Main : Node2D
 	[Export] TextEdit IPEdit;
 	[Export] TextEdit GameIDEdit;
 	[Export] TextEdit UserNameEdit;
+	[Export] Control ConnectionInterface;
+	[Export] Control GameInterface;
 	
 	public void OnConnectBtnDown(){
 		client = new TCPTestClient(this);
@@ -246,8 +243,12 @@ public partial class Main : Node2D
 		client.gameid = Int32.Parse(GameIDEdit.Text);
 		client.username = UserNameEdit.Text;
 		MainPlayer.init(client);
+		System.Threading.Thread.Sleep(400);
+		client.SendMessage("hi i exist now");
 	}
 	private void OnStartGameBtnDown(){
 		client.SendMessage("StartGame|");
+		ConnectionInterface.Hide();
+		GameInterface.Show();
 	}
 }

@@ -135,7 +135,6 @@ public partial class Card : Node2D
 		if (@event is InputEventMouseButton eventMouseButton && eventMouseButton.Pressed && eventMouseButton.ButtonIndex == MouseButton.Left)
 		{
 			InputEventMouseButton e = @event as InputEventMouseButton;
-			GD.Print(new Rect2(new Vector2(), outline.Size));
 			if(outline.GetGlobalRect().HasPoint(e.Position)){
 				SelectToggle();
 			}
