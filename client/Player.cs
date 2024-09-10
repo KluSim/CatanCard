@@ -58,13 +58,10 @@ public partial class Player : Node2D
 	public override void _Process(double delta)
 	{
 	}
-	
-	private void OnEndTurnBtnDown(){
-		client.SendMessage("EndTurn|");
-	}
 
-	public void buySelectedCallback(string type){
+	public void buySelectedCallback(string type, bool isExpansion){
 		if(client == null) return;
+		if(isExpansion) return; //TODO this is dumb
 		string resources = type;
 		foreach(Card c in resCardObjs) if(c.isSelected) resources += "," + c.type;
 		client.SendMessage("Buy|"+resources);
@@ -80,7 +77,7 @@ public partial class Player : Node2D
 				tmpCardObjs.Add(cardInstance);
 				cardInstance.MoveLocalX((tmpCardObjs.Count-1)*80f);
 				cardInstance.SetTypeBuy(r);
-				cardInstance.selectedCallback = buySelectedCallback;
+				//cardInstance.selectedCallback = buySelectedCallback;
 			}
 			showingBuyOptins = true;
 		}
@@ -181,5 +178,39 @@ public partial class Player : Node2D
 			}
 		}
 	}
-
+	
+	
+	
+	//
+	// FROM HERE ON OUT -> UI THINGS
+	//
+	
+	[Export] Control ConnectionInterface;
+	[Export] Control GameInterface;
+	[Export] Control TradeInterface;
+	[Export] Control BuyInterface;
+	[Export] Control ExpansionInterface;
+	
+	public void GeneralBack(){ GameInterface.Show(); TradeInterface.Hide(); BuyInterface.Hide(); }
+	
+	public void BuyButton(){ GameInterface.Hide(); BuyInterface.Show(); }
+	public void TradeButton(){ GameInterface.Hide(); TradeInterface.Show(); }
+	public void EndTurnButton(){ client.SendMessage("EndTurn|"); }
+	
+	public void MarketTradeButton(){ /*TODO*/ }
+	public void PlayerTradeButton(){ /*TODO*/ }
+	public void PlayerStealButton(){ /*TODO*/ }
+	
+	public void BuyStreetButton(){ buySelectedCallback("Street", false); }
+	public void BuyVillageButton(){ buySelectedCallback("Village", false); }
+	public void BuyCityButton(){ buySelectedCallback("City", false); }
+	public void BuyExpansionButton(){ BuyInterface.Hide(); ExpansionInterface.Show(); }
+	public void BuyKnightButton(){ buySelectedCallback("Knight", false); }
+	
+	public void BuyLibraryButton(){ buySelectedCallback("Libray", true); }
+	public void BuyCastleButton(){ buySelectedCallback("Castle", true); }
+	public void BuyUniversityButton(){ buySelectedCallback("University", true); }
+	public void BuyTradersGuildButton(){ buySelectedCallback("TradersGuild", true); }
+	public void BuyCityHallButton(){ buySelectedCallback("CityHall", true); }
+	public void ExpansionBackButton(){ ExpansionInterface.Hide(); BuyInterface.Show(); }
 }

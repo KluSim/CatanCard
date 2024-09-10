@@ -10,9 +10,9 @@ using System.Linq;
 using shared;
 
 public class TCPTestClient{  
-	private Main main;	
-	private TcpClient socketConnection; 	
-	private Thread clientReceiveThread; 	
+	private Main main;
+	private TcpClient socketConnection; 
+	private Thread clientReceiveThread; 
 	public void Start () {
 		ConnectToTcpServer();     
 	}  	
@@ -34,6 +34,7 @@ public class TCPTestClient{
 
 	public int uid = -1;
 	public int gameid = -1;
+	public string username = "placeholderusername";
    
 	private void ListenForData() { 
 		while(true){		
@@ -134,15 +135,6 @@ public partial class Main : Node2D
 		base._Ready();
 		marketCards = new List<Card>();
 		serverMsgs = new Queue<ServerToClient>();
-		//textField = GetNode<RichTextLabel>("Camera3D/CanvasLayer/RichTextLabel");
-		client = new TCPTestClient(this);
-		client.Start();
-		client.gameid = 32;
-		MainPlayer.init(client);
-		//textField.Text = "banana";
-		//Console.WriteLine("Give id of game to join/create");
-		//client.gameid = Int32.Parse(Console.ReadLine());
-		//client.SendMessage("connectmepls");
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -198,9 +190,6 @@ public partial class Main : Node2D
 	
 	[Export]
 	Node2D marketStart;
-	private void OnStartGameBtnDown(){
-		client.SendMessage("StartGame|");
-	}
 
 	private void OnTextEditSet(){
 		string curText = textEdit.Text;
@@ -230,7 +219,7 @@ public partial class Main : Node2D
 	public void playerSelectedCallback(string type){
 		if(isTradingMarket == 2){
 			client.SendMessage("EndMarketTrade|"+type);
-			marketBtn.Text = "Market";
+			marketBtn.Text = "Trade with Market";
 			isTradingMarket = 0;
 		}
 	}
@@ -243,5 +232,22 @@ public partial class Main : Node2D
 		}
 		//if(!isTradingMarket) MarketTradeStart();
 		//else MarketTradeEnd();
+	}
+	
+	// CONNECTION STUFF HERE
+	
+	[Export] TextEdit IPEdit;
+	[Export] TextEdit GameIDEdit;
+	[Export] TextEdit UserNameEdit;
+	
+	public void OnConnectBtnDown(){
+		client = new TCPTestClient(this);
+		client.Start();
+		client.gameid = Int32.Parse(GameIDEdit.Text);
+		client.username = UserNameEdit.Text;
+		MainPlayer.init(client);
+	}
+	private void OnStartGameBtnDown(){
+		client.SendMessage("StartGame|");
 	}
 }

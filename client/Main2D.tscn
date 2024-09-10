@@ -9,10 +9,10 @@ script = ExtResource("1_ij0h5")
 textField = NodePath("CanvasLayer/RichTextLabel")
 textEdit = NodePath("CanvasLayer/TextEdit")
 MainPlayer = NodePath("Player2d")
-otherPlayers = [NodePath("Player2d2"), null, null]
+otherPlayers = []
 card = ExtResource("2_ne6ia")
 marketStart = NodePath("MarketStart")
-marketBtn = NodePath("CanvasLayer/MarketBtn")
+marketBtn = NodePath("")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -37,63 +37,6 @@ offset_right = -464.448
 offset_bottom = -8.776
 metadata/_edit_use_anchors_ = true
 
-[node name="StartGameBtn" type="Button" parent="CanvasLayer"]
-anchors_preset = -1
-anchor_left = 0.007
-anchor_top = 0.522
-anchor_right = 0.084
-anchor_bottom = 0.566
-offset_left = -8.064
-offset_top = -2.25601
-offset_right = -5.768
-offset_bottom = 0.231964
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 4
-text = "StartGame"
-metadata/_edit_use_anchors_ = true
-
-[node name="EndTurnBtn" type="Button" parent="CanvasLayer"]
-anchors_preset = -1
-anchor_left = 0.09
-anchor_top = 0.522
-anchor_right = 0.153
-anchor_bottom = 0.566
-offset_left = 0.319992
-offset_top = -2.25601
-offset_right = 1.744
-offset_bottom = 0.231964
-grow_horizontal = 2
-grow_vertical = 2
-text = "EndTurn"
-metadata/_edit_use_anchors_ = true
-
-[node name="BuyBtn" type="Button" parent="CanvasLayer"]
-anchors_preset = -1
-anchor_left = 0.16
-anchor_top = 0.522
-anchor_right = 0.191
-anchor_bottom = 0.566
-offset_left = -0.320007
-offset_top = -2.25601
-offset_right = 1.96802
-offset_bottom = 0.231964
-grow_horizontal = 2
-grow_vertical = 2
-text = "Buy"
-
-[node name="MarketBtn" type="Button" parent="CanvasLayer"]
-anchors_preset = -1
-anchor_left = 0.09
-anchor_top = 0.593
-anchor_right = 0.167
-anchor_bottom = 0.63
-offset_left = 0.319992
-offset_top = -0.264038
-offset_right = -0.384018
-offset_bottom = 7.75998
-text = "Market"
-
 [node name="ScrollContainer" type="ScrollContainer" parent="CanvasLayer"]
 anchors_preset = -1
 anchor_left = 0.146
@@ -110,7 +53,434 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Player2d" parent="." node_paths=PackedStringArray("resCardStart", "tmpCardsStart", "habitatStart", "roadsStart", "knightStart", "scroller") instance=ExtResource("3_6pgo2")]
+[node name="InteractionPanel" type="Panel" parent="CanvasLayer"]
+anchors_preset = -1
+anchor_right = 0.226
+anchor_bottom = 1.0
+offset_right = -0.35202
+offset_bottom = 1.0
+
+[node name="ConnectionInterface" type="Control" parent="CanvasLayer/InteractionPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="IPEdit" type="TextEdit" parent="CanvasLayer/InteractionPanel/ConnectionInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.077
+anchor_top = 0.099
+anchor_right = 0.9
+anchor_bottom = 0.146
+offset_left = 0.902998
+offset_top = -0.251007
+offset_right = 0.0999908
+offset_bottom = 0.245995
+placeholder_text = "Server IP"
+
+[node name="GameIDEdit" type="TextEdit" parent="CanvasLayer/InteractionPanel/ConnectionInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.077
+anchor_top = 0.174
+anchor_right = 0.9
+anchor_bottom = 0.222
+offset_left = 0.903002
+offset_top = 0.0739899
+offset_right = 0.0999756
+offset_bottom = -0.0780182
+placeholder_text = "Game ID"
+
+[node name="UserNameEdit" type="TextEdit" parent="CanvasLayer/InteractionPanel/ConnectionInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.077
+anchor_top = 0.25
+anchor_right = 0.9
+anchor_bottom = 0.297
+offset_left = 0.903002
+offset_top = -0.25
+offset_right = 0.0999756
+offset_bottom = 0.246994
+placeholder_text = "Username"
+
+[node name="ConnectButton" type="Button" parent="CanvasLayer/InteractionPanel/ConnectionInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.08
+anchor_top = 0.333
+anchor_right = 0.9
+anchor_bottom = 0.381
+offset_left = 0.120003
+offset_top = -0.117004
+offset_right = 0.0999756
+offset_bottom = -0.269012
+grow_horizontal = 2
+grow_vertical = 2
+text = "Connect"
+
+[node name="StartGameButton" type="Button" parent="CanvasLayer/InteractionPanel/ConnectionInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.077
+anchor_top = 0.411
+anchor_right = 0.9
+anchor_bottom = 0.459
+offset_left = 0.903002
+offset_top = 0.260986
+offset_right = 0.0999756
+offset_bottom = 0.108978
+grow_horizontal = 2
+grow_vertical = 2
+text = "Start Game"
+
+[node name="GameInterface" type="Control" parent="CanvasLayer/InteractionPanel"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BuyBuildingButton" type="Button" parent="CanvasLayer/InteractionPanel/GameInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.099
+anchor_right = 0.901
+anchor_bottom = 0.146
+offset_left = -0.0599995
+offset_top = -0.251007
+offset_right = -0.0800171
+offset_bottom = 0.245995
+grow_horizontal = 2
+grow_vertical = 2
+text = "Buy"
+
+[node name="TradeButton" type="Button" parent="CanvasLayer/InteractionPanel/GameInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.182
+anchor_right = 0.901
+anchor_bottom = 0.23
+offset_left = -0.0599995
+offset_top = -0.118004
+offset_right = -0.0800171
+offset_bottom = -0.270004
+grow_horizontal = 2
+grow_vertical = 2
+text = "Trade"
+
+[node name="EndTurnButton" type="Button" parent="CanvasLayer/InteractionPanel/GameInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.26
+anchor_right = 0.901
+anchor_bottom = 0.308
+offset_left = -0.0599995
+offset_top = 0.259979
+offset_right = -0.0800171
+offset_bottom = 0.107986
+grow_horizontal = 2
+grow_vertical = 2
+text = "End Turn"
+
+[node name="TradeInterface" type="Control" parent="CanvasLayer/InteractionPanel"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarketTradeButton" type="Button" parent="CanvasLayer/InteractionPanel/TradeInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.099
+anchor_right = 0.901
+anchor_bottom = 0.146
+offset_left = -0.0599995
+offset_top = -0.251007
+offset_right = -0.0800171
+offset_bottom = 0.245995
+grow_horizontal = 2
+grow_vertical = 2
+text = "Trade with Market"
+
+[node name="PlayerTradeButton" type="Button" parent="CanvasLayer/InteractionPanel/TradeInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.182
+anchor_right = 0.901
+anchor_bottom = 0.23
+offset_left = -0.0599995
+offset_top = -0.118004
+offset_right = -0.0800171
+offset_bottom = -0.270004
+grow_horizontal = 2
+grow_vertical = 2
+text = "Trade with Player"
+
+[node name="PlayerStealButton" type="Button" parent="CanvasLayer/InteractionPanel/TradeInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.26
+anchor_right = 0.901
+anchor_bottom = 0.308
+offset_left = -0.0599995
+offset_top = 0.259979
+offset_right = -0.0800171
+offset_bottom = 0.107986
+grow_horizontal = 2
+grow_vertical = 2
+text = "Steal from Player"
+
+[node name="TradeBack" type="Button" parent="CanvasLayer/InteractionPanel/TradeInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.336
+anchor_right = 0.901
+anchor_bottom = 0.384
+offset_left = -0.0599995
+offset_top = -0.0640106
+offset_right = -0.0800171
+offset_bottom = -0.216003
+grow_horizontal = 2
+grow_vertical = 2
+text = "Back"
+
+[node name="BuyInterface" type="Control" parent="CanvasLayer/InteractionPanel"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="StreetButton" type="Button" parent="CanvasLayer/InteractionPanel/BuyInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.099
+anchor_right = 0.901
+anchor_bottom = 0.146
+offset_left = -0.0599995
+offset_top = -0.251007
+offset_right = -0.0800171
+offset_bottom = 0.245995
+grow_horizontal = 2
+grow_vertical = 2
+text = "Street
+"
+
+[node name="VillageButton" type="Button" parent="CanvasLayer/InteractionPanel/BuyInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.182
+anchor_right = 0.901
+anchor_bottom = 0.23
+offset_left = -0.0599995
+offset_top = -0.118004
+offset_right = -0.0800171
+offset_bottom = -0.270004
+grow_horizontal = 2
+grow_vertical = 2
+text = "Village
+"
+
+[node name="CityButton" type="Button" parent="CanvasLayer/InteractionPanel/BuyInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.26
+anchor_right = 0.901
+anchor_bottom = 0.308
+offset_left = -0.0599995
+offset_top = 0.259979
+offset_right = -0.0800171
+offset_bottom = 0.107986
+grow_horizontal = 2
+grow_vertical = 2
+text = "City
+"
+
+[node name="ExpansionButton" type="Button" parent="CanvasLayer/InteractionPanel/BuyInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.336
+anchor_right = 0.901
+anchor_bottom = 0.384
+offset_left = -0.0599995
+offset_top = -0.0640106
+offset_right = -0.0800171
+offset_bottom = -0.216003
+grow_horizontal = 2
+grow_vertical = 2
+text = "Expansion"
+
+[node name="KnightButton" type="Button" parent="CanvasLayer/InteractionPanel/BuyInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.411
+anchor_right = 0.901
+anchor_bottom = 0.459
+offset_left = -0.0599995
+offset_top = 0.260986
+offset_right = -0.0800171
+offset_bottom = 0.108978
+grow_horizontal = 2
+grow_vertical = 2
+text = "Knight"
+
+[node name="BuyBack" type="Button" parent="CanvasLayer/InteractionPanel/BuyInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.487
+anchor_right = 0.901
+anchor_bottom = 0.535
+offset_left = -0.0599995
+offset_top = -0.0630188
+offset_right = -0.0800171
+offset_bottom = -0.215027
+grow_horizontal = 2
+grow_vertical = 2
+text = "Back"
+
+[node name="ExpansionInterface" type="Control" parent="CanvasLayer/InteractionPanel"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LibraryButton" type="Button" parent="CanvasLayer/InteractionPanel/ExpansionInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.099
+anchor_right = 0.901
+anchor_bottom = 0.146
+offset_left = -0.0599995
+offset_top = -0.251007
+offset_right = -0.0800171
+offset_bottom = 0.245995
+grow_horizontal = 2
+grow_vertical = 2
+text = "Library
+"
+
+[node name="ChurchButton" type="Button" parent="CanvasLayer/InteractionPanel/ExpansionInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.182
+anchor_right = 0.901
+anchor_bottom = 0.23
+offset_left = -0.0599995
+offset_top = -0.118004
+offset_right = -0.0800171
+offset_bottom = -0.270004
+grow_horizontal = 2
+grow_vertical = 2
+text = "Church
+"
+
+[node name="CastleButton" type="Button" parent="CanvasLayer/InteractionPanel/ExpansionInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.26
+anchor_right = 0.901
+anchor_bottom = 0.308
+offset_left = -0.0599995
+offset_top = 0.259979
+offset_right = -0.0800171
+offset_bottom = 0.107986
+grow_horizontal = 2
+grow_vertical = 2
+text = "Castle
+"
+
+[node name="UniversityButton" type="Button" parent="CanvasLayer/InteractionPanel/ExpansionInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.336
+anchor_right = 0.901
+anchor_bottom = 0.384
+offset_left = -0.0599995
+offset_top = -0.0640106
+offset_right = -0.0800171
+offset_bottom = -0.216003
+grow_horizontal = 2
+grow_vertical = 2
+text = "University"
+
+[node name="TradersGuildButton" type="Button" parent="CanvasLayer/InteractionPanel/ExpansionInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.411
+anchor_right = 0.901
+anchor_bottom = 0.459
+offset_left = -0.0599995
+offset_top = 0.260986
+offset_right = -0.0800171
+offset_bottom = 0.108978
+grow_horizontal = 2
+grow_vertical = 2
+text = "Traders Guild"
+
+[node name="CityHallButton" type="Button" parent="CanvasLayer/InteractionPanel/ExpansionInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.487
+anchor_right = 0.901
+anchor_bottom = 0.535
+offset_left = -0.0599976
+offset_top = -0.0630188
+offset_right = -0.0800171
+offset_bottom = -0.215027
+grow_horizontal = 2
+grow_vertical = 2
+text = "City Hall"
+
+[node name="ExpansionBack" type="Button" parent="CanvasLayer/InteractionPanel/ExpansionInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.562
+anchor_right = 0.901
+anchor_bottom = 0.61
+offset_left = -0.0599976
+offset_top = 0.261963
+offset_right = -0.0800171
+offset_bottom = 0.110016
+grow_horizontal = 2
+grow_vertical = 2
+text = "Back"
+
+[node name="Player2d" parent="." node_paths=PackedStringArray("resCardStart", "tmpCardsStart", "habitatStart", "roadsStart", "knightStart", "scroller", "ConnectionInterface", "GameInterface", "TradeInterface", "BuyInterface", "ExpansionInterface") instance=ExtResource("3_6pgo2")]
 resCardStart = NodePath("ResCards")
 tmpCardsStart = NodePath("TmpCars")
 habitatStart = NodePath("Habitat")
@@ -118,6 +488,11 @@ roadsStart = NodePath("Roads")
 knightStart = NodePath("Knight")
 isMainPlayer = true
 scroller = NodePath("../CanvasLayer/ScrollContainer/HBoxContainer")
+ConnectionInterface = NodePath("../CanvasLayer/InteractionPanel/ConnectionInterface")
+GameInterface = NodePath("../CanvasLayer/InteractionPanel/GameInterface")
+TradeInterface = NodePath("../CanvasLayer/InteractionPanel/TradeInterface")
+BuyInterface = NodePath("../CanvasLayer/InteractionPanel/BuyInterface")
+ExpansionInterface = NodePath("../CanvasLayer/InteractionPanel/ExpansionInterface")
 
 [node name="Roads" type="Node2D" parent="Player2d"]
 position = Vector2(320, 296)
@@ -159,7 +534,17 @@ position = Vector2(992, 448)
 [node name="Knight" type="Node2D" parent="Player2d2"]
 position = Vector2(1088, 448)
 
-[connection signal="button_down" from="CanvasLayer/StartGameBtn" to="." method="OnStartGameBtnDown"]
-[connection signal="button_down" from="CanvasLayer/EndTurnBtn" to="Player2d" method="OnEndTurnBtnDown"]
-[connection signal="button_down" from="CanvasLayer/BuyBtn" to="Player2d" method="OnBuyBtnDown"]
-[connection signal="button_down" from="CanvasLayer/MarketBtn" to="." method="MarketTradeBtn"]
+[connection signal="button_down" from="CanvasLayer/InteractionPanel/ConnectionInterface/ConnectButton" to="." method="OnConnectBtnDown"]
+[connection signal="button_down" from="CanvasLayer/InteractionPanel/ConnectionInterface/StartGameButton" to="." method="OnStartGameBtnDown"]
+[connection signal="button_down" from="CanvasLayer/InteractionPanel/GameInterface/BuyBuildingButton" to="Player2d" method="BuyButton"]
+[connection signal="button_down" from="CanvasLayer/InteractionPanel/GameInterface/TradeButton" to="Player2d" method="TradeButton"]
+[connection signal="button_down" from="CanvasLayer/InteractionPanel/GameInterface/EndTurnButton" to="Player2d" method="EndTurnButton"]
+[connection signal="button_down" from="CanvasLayer/InteractionPanel/TradeInterface/MarketTradeButton" to="." method="MarketTradeBtn"]
+[connection signal="button_down" from="CanvasLayer/InteractionPanel/TradeInterface/TradeBack" to="Player2d" method="GeneralBack"]
+[connection signal="button_down" from="CanvasLayer/InteractionPanel/BuyInterface/StreetButton" to="Player2d" method="BuyStreetButton"]
+[connection signal="button_down" from="CanvasLayer/InteractionPanel/BuyInterface/VillageButton" to="Player2d" method="BuyVillageButton"]
+[connection signal="button_down" from="CanvasLayer/InteractionPanel/BuyInterface/CityButton" to="Player2d" method="BuyCityButton"]
+[connection signal="button_down" from="CanvasLayer/InteractionPanel/BuyInterface/ExpansionButton" to="Player2d" method="BuyExpansionButton"]
+[connection signal="button_down" from="CanvasLayer/InteractionPanel/BuyInterface/KnightButton" to="Player2d" method="BuyKnightButton"]
+[connection signal="button_down" from="CanvasLayer/InteractionPanel/BuyInterface/BuyBack" to="Player2d" method="GeneralBack"]
+[connection signal="button_down" from="CanvasLayer/InteractionPanel/ExpansionInterface/ExpansionBack" to="Player2d" method="ExpansionBackButton"]

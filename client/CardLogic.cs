@@ -1,1 +1,1 @@
-/home/simonpanda/Desktop/server/server/catan/CardLogic.cs
+../server/catan/CardLogic.cs
