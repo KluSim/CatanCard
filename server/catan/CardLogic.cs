@@ -283,9 +283,10 @@ namespace shared
             game_id = gid;
             msg = "connectmepls";
         }
-        public ClientToServer(int gid, int uid, string msg){
+        public ClientToServer(int gid,string msg, string pn){
             game_id = gid;
             this.msg =  msg;
+            playerName = pn;
         }
         public ClientToServer(ClientToServerDecode d){
             game_id = Int32.Parse(d.game_id);
