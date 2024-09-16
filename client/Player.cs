@@ -22,6 +22,7 @@ public partial class Player : Node2D
 	
 	[Export]
 	public bool isMainPlayer;
+	public int playerIcon;
 	[Export] public HBoxContainer scroller;
 	
 	public List<Card> resCardObjs;
@@ -50,8 +51,9 @@ public partial class Player : Node2D
 		knightCardObjs = new List<Card>();
 	}
 
-	public void init(TCPTestClient cl){
+	public void init(TCPTestClient cl, int playerIcon){
 		client = cl;
+		this.playerIcon = playerIcon;
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -190,6 +192,7 @@ public partial class Player : Node2D
 	[Export] Control TradeInterface;
 	[Export] Control BuyInterface;
 	[Export] Control ExpansionInterface;
+	[Export] Control OtherPlayerHandCards;
 	
 	public void GeneralBack(){ GameInterface.Show(); TradeInterface.Hide(); BuyInterface.Hide(); }
 	
@@ -197,9 +200,14 @@ public partial class Player : Node2D
 	public void TradeButton(){ GameInterface.Hide(); TradeInterface.Show(); }
 	public void EndTurnButton(){ client.SendMessage("EndTurn|"); }
 	
-	public void MarketTradeButton(){ /*TODO*/ }
 	public void PlayerTradeButton(){ /*TODO*/ }
-	public void PlayerStealButton(){ /*TODO*/ }
+	public void PlayerStealLibraryButton(){ 
+		client.SendMessage("PlayerTradeBib|"); //TODO get Player Index
+	}
+	
+	public void PlayerStealGuildButton(){
+		
+	}
 	
 	public void BuyStreetButton(){ buySelectedCallback("Street", false); }
 	public void BuyVillageButton(){ buySelectedCallback("Village", false); }

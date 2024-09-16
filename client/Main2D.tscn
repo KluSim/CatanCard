@@ -1,10 +1,14 @@
-[gd_scene load_steps=4 format=3 uid="uid://da7l0ynpw87g6"]
+[gd_scene load_steps=8 format=3 uid="uid://da7l0ynpw87g6"]
 
 [ext_resource type="Script" path="res://Main.cs" id="1_ij0h5"]
 [ext_resource type="PackedScene" uid="uid://wk6olypje462" path="res://Card2D.tscn" id="2_ne6ia"]
 [ext_resource type="PackedScene" uid="uid://qf5p6266vbnw" path="res://Player2D.tscn" id="3_6pgo2"]
+[ext_resource type="Texture2D" uid="uid://fq8057n46fiv" path="res://Mats/PlayerIcon1.png" id="3_7cmy4"]
+[ext_resource type="Texture2D" uid="uid://dlcvk367x31q4" path="res://Mats/PlayerIcon2.png" id="4_r5alr"]
+[ext_resource type="Texture2D" uid="uid://cw808se74p7ul" path="res://Mats/PlayerIcon3.png" id="5_xqtnk"]
+[ext_resource type="Texture2D" uid="uid://cnrp67b331b66" path="res://Mats/PlayerIcon4.png" id="6_51di4"]
 
-[node name="Main2d" type="Node2D" node_paths=PackedStringArray("textField", "textEdit", "MainPlayer", "otherPlayers", "marketStart", "marketBtn", "IPEdit", "GameIDEdit", "UserNameEdit", "ConnectionInterface", "GameInterface")]
+[node name="Main2d" type="Node2D" node_paths=PackedStringArray("textField", "textEdit", "MainPlayer", "otherPlayers", "marketStart", "marketBtn", "IPEdit", "GameIDEdit", "UserNameEdit", "AvatarSelector", "ConnectionInterface", "GameInterface")]
 script = ExtResource("1_ij0h5")
 textField = NodePath("CanvasLayer/RichTextLabel")
 textEdit = NodePath("CanvasLayer/TextEdit")
@@ -16,6 +20,7 @@ marketBtn = NodePath("CanvasLayer/InteractionPanel/TradeInterface/MarketTradeBut
 IPEdit = NodePath("CanvasLayer/InteractionPanel/ConnectionInterface/IPEdit")
 GameIDEdit = NodePath("CanvasLayer/InteractionPanel/ConnectionInterface/GameIDEdit")
 UserNameEdit = NodePath("CanvasLayer/InteractionPanel/ConnectionInterface/UserNameEdit")
+AvatarSelector = NodePath("CanvasLayer/InteractionPanel/ConnectionInterface/AvatarSelector")
 ConnectionInterface = NodePath("CanvasLayer/InteractionPanel/ConnectionInterface")
 GameInterface = NodePath("CanvasLayer/InteractionPanel/GameInterface")
 
@@ -46,17 +51,61 @@ metadata/_edit_use_anchors_ = true
 anchors_preset = -1
 anchor_left = 0.265
 anchor_top = 0.741
-anchor_right = 0.734
+anchor_right = 0.736
 anchor_bottom = 0.975
 offset_left = -0.280029
-offset_top = -0.16803
-offset_right = 0.431946
+offset_top = -0.16806
+offset_right = 0.127869
 offset_bottom = 0.200012
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+
+[node name="OtherPlayerHandCards" type="Panel" parent="CanvasLayer"]
+visible = false
+anchors_preset = -1
+anchor_left = 0.243
+anchor_top = 0.296
+anchor_right = 0.75
+anchor_bottom = 0.691
+offset_left = 0.0639954
+offset_top = -7.808
+offset_right = -6.10352e-05
+offset_bottom = 0.231964
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CanvasLayer/OtherPlayerHandCards"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.041
+anchor_top = 0.061
+anchor_right = 0.973
+anchor_bottom = 0.629
+offset_left = 0.0559998
+offset_top = -0.104002
+offset_right = -0.232056
+offset_bottom = -0.0559998
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/OtherPlayerHandCards/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ConfirmSteal" type="Button" parent="CanvasLayer/OtherPlayerHandCards"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.096
+anchor_top = 0.818
+anchor_right = 0.904
+anchor_bottom = 0.936
+offset_left = -0.0639877
+offset_top = 0.0479889
+offset_right = 0.0639648
+offset_bottom = -0.104019
+grow_horizontal = 2
+grow_vertical = 2
+text = "Steal"
 
 [node name="InteractionPanel" type="Panel" parent="CanvasLayer"]
 anchors_preset = -1
@@ -74,7 +123,7 @@ offset_right = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="IPEdit" type="TextEdit" parent="CanvasLayer/InteractionPanel/ConnectionInterface"]
+[node name="IPEdit" type="LineEdit" parent="CanvasLayer/InteractionPanel/ConnectionInterface"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.077
@@ -87,7 +136,7 @@ offset_right = 0.0999908
 offset_bottom = 0.245995
 placeholder_text = "Server IP"
 
-[node name="GameIDEdit" type="TextEdit" parent="CanvasLayer/InteractionPanel/ConnectionInterface"]
+[node name="GameIDEdit" type="LineEdit" parent="CanvasLayer/InteractionPanel/ConnectionInterface"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.077
@@ -100,7 +149,7 @@ offset_right = 0.0999756
 offset_bottom = -0.0780182
 placeholder_text = "Game ID"
 
-[node name="UserNameEdit" type="TextEdit" parent="CanvasLayer/InteractionPanel/ConnectionInterface"]
+[node name="UserNameEdit" type="LineEdit" parent="CanvasLayer/InteractionPanel/ConnectionInterface"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.077
@@ -110,7 +159,7 @@ anchor_bottom = 0.297
 offset_left = 0.903002
 offset_top = -0.25
 offset_right = 0.0999756
-offset_bottom = 0.246994
+offset_bottom = 0.247009
 placeholder_text = "Username"
 
 [node name="ConnectButton" type="Button" parent="CanvasLayer/InteractionPanel/ConnectionInterface"]
@@ -142,6 +191,22 @@ offset_bottom = 0.108978
 grow_horizontal = 2
 grow_vertical = 2
 text = "Start Game"
+
+[node name="AvatarSelector" type="OptionButton" parent="CanvasLayer/InteractionPanel/ConnectionInterface"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 316.0
+offset_right = 232.0
+offset_bottom = 474.0
+selected = 0
+item_count = 4
+popup/item_0/icon = ExtResource("3_7cmy4")
+popup/item_1/icon = ExtResource("4_r5alr")
+popup/item_1/id = 1
+popup/item_2/icon = ExtResource("5_xqtnk")
+popup/item_2/id = 2
+popup/item_3/icon = ExtResource("6_51di4")
+popup/item_3/id = 3
 
 [node name="GameInterface" type="Control" parent="CanvasLayer/InteractionPanel"]
 visible = false
@@ -236,7 +301,7 @@ grow_horizontal = 2
 grow_vertical = 2
 text = "Trade with Player"
 
-[node name="PlayerStealButton" type="Button" parent="CanvasLayer/InteractionPanel/TradeInterface"]
+[node name="PlayerStealLibrary" type="Button" parent="CanvasLayer/InteractionPanel/TradeInterface"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.081
@@ -249,19 +314,34 @@ offset_right = -0.0800171
 offset_bottom = 0.107986
 grow_horizontal = 2
 grow_vertical = 2
-text = "Steal from Player"
+text = "Steal using Library"
 
-[node name="TradeBack" type="Button" parent="CanvasLayer/InteractionPanel/TradeInterface"]
+[node name="PlayerStealGuild" type="Button" parent="CanvasLayer/InteractionPanel/TradeInterface"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.081
 anchor_top = 0.336
 anchor_right = 0.901
 anchor_bottom = 0.384
-offset_left = -0.0599995
+offset_left = -0.0599976
 offset_top = -0.0640106
 offset_right = -0.0800171
-offset_bottom = -0.216003
+offset_bottom = -0.215988
+grow_horizontal = 2
+grow_vertical = 2
+text = "Steal using Traders Guild"
+
+[node name="TradeBack" type="Button" parent="CanvasLayer/InteractionPanel/TradeInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.081
+anchor_top = 0.411
+anchor_right = 0.901
+anchor_bottom = 0.459
+offset_left = -0.0599976
+offset_top = 0.260986
+offset_right = -0.0800171
+offset_bottom = 0.108978
 grow_horizontal = 2
 grow_vertical = 2
 text = "Back"

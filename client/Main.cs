@@ -33,13 +33,14 @@ public class TCPTestClient{
 	}  	
 
 	public int uid = -1;
+	public string ip = "localhost";
 	public int gameid = -1;
 	public string username = "placeholderusername";
    
 	private void ListenForData() { 
 		while(true){		
 		try { 			
-			socketConnection = new TcpClient("192.168.178.43", 8052);
+			socketConnection = new TcpClient(ip, 8052);
 			Byte[] bytes = new Byte[1024];             
 			while (true) { 				
 				// Get a stream object for reading 				
@@ -231,20 +232,22 @@ public partial class Main : Node2D
 	
 	// CONNECTION STUFF HERE
 	
-	[Export] TextEdit IPEdit;
-	[Export] TextEdit GameIDEdit;
-	[Export] TextEdit UserNameEdit;
+	[Export] LineEdit IPEdit;
+	[Export] LineEdit GameIDEdit;
+	[Export] LineEdit UserNameEdit;
+	[Export] OptionButton AvatarSelector;
 	[Export] Control ConnectionInterface;
 	[Export] Control GameInterface;
 	
 	public void OnConnectBtnDown(){
 		client = new TCPTestClient(this);
-		client.Start();
+		client.ip = IPEdit.Text;
 		client.gameid = Int32.Parse(GameIDEdit.Text);
 		client.username = UserNameEdit.Text;
-		MainPlayer.init(client);
+		client.Start();
+		MainPlayer.init(client, AvatarSelector.Selected);
 		System.Threading.Thread.Sleep(400);
-		client.SendMessage("hi i exist now");
+		client.SendMessage("" + AvatarSelector.Selected);
 	}
 	private void OnStartGameBtnDown(){
 		client.SendMessage("StartGame|");
