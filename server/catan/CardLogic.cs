@@ -270,6 +270,8 @@ namespace shared
     }
 
     public class PlayerInformation{
+        public string index{get; set;}
+        public string iconIndex{get; set;}
         public string numOfCards {get; set;}
         public string playerName {get; set;}
         public string yourBuildings {get; set;}
