@@ -445,6 +445,8 @@ namespace catan{
 
         public int connectant(NetworkStream stream, ClientToServer msg){
             int returningPlayerIndex = players.FindIndex(player  => player.playerName == msg.playerName && !player.isConnected);
+            int stillConnectedPlayerIndex = players.FindIndex(player  => player.playerName == msg.playerName && player.isConnected);
+
             if(gameStarted && returningPlayerIndex != -1){//only accept returning players
                 players[returningPlayerIndex].isConnected = true;
                 players[returningPlayerIndex].stream = stream;
@@ -456,14 +458,14 @@ namespace catan{
                 return numberOfPlayers;
             }
             else{ //accept everyone, but also reconnects
-                if(returningPlayerIndex == -1){
+                if(returningPlayerIndex == -1 && stillConnectedPlayerIndex == -1){
                     string jsonString = JsonSerializer.Serialize(new ServerToClient().decode());
                     stream.WriteAsync(Encoding.ASCII.GetBytes(jsonString));
                     players.Add(new PlayerState(msg.playerName, stream, Int32.Parse(msg.msg)));
                     numberOfPlayers++;
                     return numberOfPlayers;
                 }
-                else{
+                else if(returningPlayerIndex != -1){
                     players[returningPlayerIndex].isConnected = true;
                     players[returningPlayerIndex].stream = stream;
                     //inform(msg);
@@ -473,6 +475,7 @@ namespace catan{
                     players[returningPlayerIndex].stream.WriteAsync(Encoding.ASCII.GetBytes(jsonString));
                     return numberOfPlayers;
                 }
+                return -1;
             }
             
         }
