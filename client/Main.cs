@@ -72,6 +72,10 @@ public class TCPTestClient{
 			//Console.WriteLine("Socket exception: " + socketException);         
 			Console.WriteLine("Couldn't connect, trying again");
 			System.Threading.Thread.Sleep(1000);
+		}
+		catch(InvalidOperationException bozoDown){
+			Console.WriteLine("Server Died");
+			System.Threading.Thread.Sleep(1000);
 		} 
 		}    
 	}  	
@@ -113,6 +117,7 @@ public partial class Main : Node2D
 	private TextEdit textEdit;
 
 	private List<Card> marketCards;
+	private List<Card> playerIcons;
 
 	Queue<ServerToClient> serverMsgs;
 	[Export] Player MainPlayer;
@@ -125,6 +130,7 @@ public partial class Main : Node2D
 	{
 		base._Ready();
 		marketCards = new List<Card>();
+		playerIcons = new List<Card>();
 		serverMsgs = new Queue<ServerToClient>();
 	}
 
@@ -150,7 +156,7 @@ public partial class Main : Node2D
 					int num = marketCardsAmnts.correspondingAmnt(r);
 					for(int i = 0; i < num; i++){
 						Card cardInstance = card.Instantiate<Card>();
-						cardInstance.isMarketCard = true;
+						cardInstance.isSelectable = true;
 						cardInstance.selectedCallback = marketCardSelectedCallback;
 						AddChild(cardInstance);
 						cardInstance.GlobalTransform = marketStart.GlobalTransform;
@@ -164,16 +170,22 @@ public partial class Main : Node2D
 				int count = 0;
 				MainPlayer.SetRes(new RessourceCardAmnts(sr.yourRes));
 				
+				
 				for(int i = 0; i < sr.players.Length; i++){
 					if(sr.players[i] == null) break;
 					string currPlayerName = sr.players[i].playerName;
 					if(currPlayerName == client.username){
+						MainPlayer.setExpansions(new ExpansionCardAmnts(sr.players[i].yourExpansions));
+						MainPlayer.setPlayerName(currPlayerName);
 						MainPlayer.setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
 						continue;
 					}
-					
+					otherPlayers[count].setExpansions(new ExpansionCardAmnts(sr.players[i].yourExpansions));
+					otherPlayers[count].setPlayerName(currPlayerName);
 					otherPlayers[count].setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
 					otherPlayers[count].SetUnknownRes(Int32.Parse(sr.players[i].numOfCards));
+					Card c = otherPlayers[count].SetPlayerIcon(Int32.Parse(sr.players[i].iconIndex));
+					if(c != null) playerIcons.Add(c);
 					count++;
 				}
 			}
@@ -201,6 +213,8 @@ public partial class Main : Node2D
 		client.SendMessage(cmd);
 	}
 	
+	// Market trade functions and vars
+	
 	[Export]
 	Button marketBtn;
 	int isTradingMarket = 0;
@@ -211,15 +225,9 @@ public partial class Main : Node2D
 		marketBtn.Text = "Select Your Card";
 		isTradingMarket++;
 	}
-
-	public void playerSelectedCallback(string type){
-		if(isTradingMarket == 2){
-			client.SendMessage("EndMarketTrade|"+type);
-			marketBtn.Text = "Trade with Market";
-			isTradingMarket = 0;
-		}
-	}
+	
 	public void MarketTradeBtn(){
+		if(isPlayerTrading != 0) return;
 		if(isTradingMarket == 0){
 			foreach(Card c in MainPlayer.resCardObjs) c.SetSelectNoCb(false);
 			foreach(Card c in marketCards) c.SetSelectNoCb(false);
@@ -228,6 +236,44 @@ public partial class Main : Node2D
 		}
 		//if(!isTradingMarket) MarketTradeStart();
 		//else MarketTradeEnd();
+	}
+	
+	// Player trade functions and vars
+	
+	[Export] Button playerTradeBtn;
+	int isPlayerTrading = 0;
+	
+	public void PlayerIconSelectedCallback(string type){
+		if(isPlayerTrading != 1) return;
+		client.SendMessage("StartPlayerSteal|" + type);
+		playerTradeBtn.Text = "Select Your Card";
+		isPlayerTrading++;
+	}
+	
+	public void PlayerTradeBtn(){
+		if(isTradingMarket != 0) return;
+		if(isPlayerTrading == 0){
+			foreach(Card c in MainPlayer.resCardObjs) c.SetSelectNoCb(false);
+			foreach(Card c in playerIcons) c.SetSelectNoCb(false);
+			playerTradeBtn.Text = "Select Player";
+			isPlayerTrading = 1;
+		}
+	}
+	
+	// Method needed for multiple trades
+	
+	public void playerResSelectedCallback(string type){
+		if(isTradingMarket == 2){
+			client.SendMessage("EndMarketTrade|"+type);
+			marketBtn.Text = "Trade with Market";
+			isTradingMarket = 0;
+		}
+		
+		if(isPlayerTrading == 2){
+			client.SendMessage("EndPlayerSteal|"+type);
+			playerTradeBtn.Text = "Trade with Player";
+			isPlayerTrading = 0;
+		}
 	}
 	
 	// CONNECTION STUFF HERE

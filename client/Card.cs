@@ -34,11 +34,28 @@ public partial class Card : Node2D
 	Texture2D street;
 	
 	[Export]
+	Texture2D castle;
+	[Export]
+	Texture2D university;
+	[Export]
+	Texture2D church;
+	[Export]
+	Texture2D tradersguild;
+	[Export]
+	Texture2D cityhall;
+	[Export]
+	Texture2D library;
+	
+	[Export]
 	Texture2D unknown_res;
+	
+	[Export]
+	Texture2D[] playericons;
 	
 	public Player player;
 	public bool isSelected = false;
-	public bool isMarketCard = false;
+	public bool isSelectable = false;
+	public bool isPlayerIcon = false;
 	public selectedCallback selectedCallback;
 
 	public string type;
@@ -52,6 +69,10 @@ public partial class Card : Node2D
 	}
 	public void setPlayer(Player p){
 		player = p;
+	}
+	public void setPlayerIcon(int i){
+		textureSlot.Texture = playericons[i];
+		isPlayerIcon = true;
 	}
 
 	public void SetTypeRc(RessourceCard rc){
@@ -75,6 +96,29 @@ public partial class Card : Node2D
 			case RessourceCard.Wheat:
 				textureSlot.Texture = wheat;
 				type = "Wheat";
+				break;
+		}
+	}
+	
+	public void SetExpansionType(CityExpansion ec){
+		switch(ec){
+			case CityExpansion.Castle:
+				textureSlot.Texture = castle;
+				break;
+			case CityExpansion.University:
+				textureSlot.Texture = university;
+				break;
+			case CityExpansion.Church:
+				textureSlot.Texture = church;
+				break;
+			case CityExpansion.TradersGuild:
+				textureSlot.Texture = tradersguild;
+				break;
+			case CityExpansion.CityHall:
+				textureSlot.Texture = cityhall;
+				break;
+			case CityExpansion.Library:
+				textureSlot.Texture = library;
 				break;
 		}
 	}
@@ -111,11 +155,15 @@ public partial class Card : Node2D
 	}
 
 	public void SelectToggle(){
-		if(!isMarketCard && (player == null || !player.isMainPlayer)) return;
+		if(!isSelectable) return;
 		isSelected = !isSelected;
 		if(isSelected){
 			outline.Show();
-			if(selectedCallback != null)selectedCallback(type);
+			if(selectedCallback != null) 
+			{	
+				if(isPlayerIcon) selectedCallback(player.playerName);
+				else selectedCallback(type);
+			}
 		}
 		else
 			outline.Hide();
