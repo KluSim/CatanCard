@@ -62,10 +62,10 @@ namespace shared
         }
     }
 
-    enum CityExpansion {
+    public enum CityExpansion {
         Library, TradersGuild, Church, CityHall, Castle, University
     }
-    class CityExpansionMths{
+    public class CityExpansionMths{
         public static string toString(CityExpansion ce){
             switch(ce){
                 case CityExpansion.Library:
@@ -82,6 +82,23 @@ namespace shared
                     return "University";
             }
             return "";
+        }
+        public static CityExpansion toEnum(string ce){
+            switch(ce){
+                case "Library":
+                    return CityExpansion.Library;
+                case "TradersGuild":
+                    return CityExpansion.TradersGuild;
+                case "Church":
+                    return CityExpansion.Church;
+                case "CityHall":
+                    return CityExpansion.CityHall;
+                case "Castle":
+                    return CityExpansion.Castle;
+                case "University":
+                    return CityExpansion.University;
+            }
+            return CityExpansion.CityHall;
         }
     }
 

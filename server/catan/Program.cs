@@ -319,6 +319,7 @@ namespace catan{
                 case "Buy":
                     string thing = parameters[0];
                     BuildingCard buything = BuildingCard.Expansion;
+                    CityExpansion? expthing = null;
                     switch(thing){
                         case "Village":
                             buything = BuildingCard.Village;
@@ -328,7 +329,7 @@ namespace catan{
                             break;
                         case "Expansion":
                             buything = BuildingCard.Expansion;
-                            //TODO
+                            expthing = CityExpansionMths.toEnum(parameters[1]);
                             break;
                         case "Street":
                             buything = BuildingCard.Street;
@@ -340,12 +341,13 @@ namespace catan{
                     if(buildingPile.correspondingAmnt(buything) <= 0 && buything != BuildingCard.Street && buything != BuildingCard.Knight) break;
 
                     RessourceCardAmnts proposed = new RessourceCardAmnts();
-                    for(int i = 1; i < parameters.Length; i++){
+                    int add = expthing == null ? 0 : 1;
+                    for(int i = 1+add; i < parameters.Length; i++){
                         RessourceCard curCard = RessourceCardMths.toEnum(parameters[i]);
                         proposed.correspondingAmnt(curCard)++;
                     }
 
-                    if(current.buyBuilding(buything, proposed, null)) {
+                    if(current.buyBuilding(buything, proposed, expthing)) {
                         buildingPile.correspondingAmnt(buything)--;
                         bool stolen = false;
                         int stolenPlayer = currentTurnPlayer;
@@ -390,12 +392,13 @@ namespace catan{
                     break;
                 case "StartPlayerSteal":
                     if(playerTradingAction != 0) break;
-                    targetPlayer = Int32.Parse(parameters[0]);
+                    targetPlayer = players.FindIndex(player  => player.playerName == parameters[0]);
+                    if(targetPlayer == -1) break;
                     if(targetPlayer == currentTurnPlayer) break;
                     if(current.startPlayerSteal(players[targetPlayer])) playerTradingAction = 1;
                     break;
                 case "EndPlayerSteal":
-                    if(playerTradingAction != 2) break;
+                    if(playerTradingAction != 1) break;
                     if(current.endPlayerSteal(players[targetPlayer], RessourceCardMths.toEnum(parameters[0]))) playerTradingAction = 0;
                     break;
                 case "StartMarketTrade":
@@ -408,7 +411,8 @@ namespace catan{
                     break;
                 case "PlayerStealGuild":
                     if(parameters.Length < 1) break;
-                    int stealethPlayerIndex = Int32.Parse(parameters[0]);
+                    int stealethPlayerIndex = players.FindIndex(player  => player.playerName == parameters[0]);
+                    if(stealethPlayerIndex == -1) break;
                     if(stealethPlayerIndex >= players.Count) break;
                     PlayerState stealethPlayer = players[stealethPlayerIndex];
                     if(stealethPlayer.calculateVictoryPoints() < current.calculateVictoryPoints()) break;
@@ -417,7 +421,8 @@ namespace catan{
                     break;
                 case "PlayerTradeBib":
                     if(parameters.Length < 1) break;
-                    targetPlayer = Int32.Parse(parameters[0]);
+                    targetPlayer =players.FindIndex(player  => player.playerName == parameters[0]);
+                    if(targetPlayer == -1) break;
                     if(targetPlayer >= players.Count) break;
                     PlayerState tradethPlayer = players[targetPlayer];
                     Schriftrolle sr = new Schriftrolle();
@@ -501,8 +506,13 @@ namespace catan{
         }
 
         public void playerDisconnected(NetworkStream stream){
-            int playerIndex = players.FindIndex(player  => player.stream == stream);
+            int playerIndex = players.FindIndex(player  => player.stream == stream);//TODO weird
+            if(playerIndex == -1) {
+                Console.WriteLine("Unknown Disconnect??");
+                return;
+            }
             players[playerIndex].isConnected = false;
+            Console.WriteLine("Client Disconnect");
         }
     }
   
@@ -583,13 +593,11 @@ namespace catan{
                     }
                     }
                     catch(InvalidOperationException ioe){
-                        Console.WriteLine("Client Disconnect");
                         if(theStream!=null)gameInstances[theGameId].playerDisconnected(theStream);
                         return;
                         //gameInstances = new Dictionary<int, ServerState>();
                     }
                     catch(IOException ioe){
-                        Console.WriteLine("Client Disconnect");
                         if(theStream!=null)gameInstances[theGameId].playerDisconnected(theStream);
                         return;
                         //gameInstances = new Dictionary<int, ServerState>();
