@@ -201,7 +201,7 @@ namespace shared
         }
     }
 
-    class ExpansionCardAmnts{
+    public class ExpansionCardAmnts{
         public int library, tradersGuild, church, cityHall, castle, university;
         public int total{
             get {
