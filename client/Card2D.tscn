@@ -60,10 +60,8 @@ grow_vertical = 2
 visible = false
 layout_mode = 1
 anchors_preset = -1
-anchor_right = 0.96
-anchor_bottom = 0.96
-offset_right = 4.0
-offset_bottom = 6.0
+anchor_right = 1.0
+anchor_bottom = 1.0
 texture = ExtResource("6_8w7e1")
 
 [node name="victory" type="TextureRect" parent="movit"]

@@ -51,6 +51,7 @@ public partial class Player : Node2D
 		streetCardObjs = new List<Card>();
 		inhabitCardObjs = new List<Card>();
 		knightCardObjs = new List<Card>();
+		expansionCardObjs = new List<Card>();
 	}
 
 	public void init(TCPTestClient cl, int playerIcon){
@@ -137,6 +138,7 @@ public partial class Player : Node2D
 		foreach(BuildingCard r in Enum.GetValues(typeof(BuildingCard))) {
 			int num = buildCards.correspondingAmnt(r);
 			for(int i = 0; i < num; i++){
+				if(r == BuildingCard.Expansion) continue; 
 				Card cardInstance = card.Instantiate<Card>();
 				AddChild(cardInstance);
 				cardInstance.SetTypeBuy(r);
@@ -167,14 +169,32 @@ public partial class Player : Node2D
 	}
 	
 	[Export] Node2D castleStart;
-	[Export] Node2D universityeStart;
+	[Export] Node2D universityStart;
 	[Export] Node2D churchStart;
 	[Export] Node2D tradersGuildStart;
 	[Export] Node2D cityHallStart;
 	[Export] Node2D libraryStart;
 	
+	List<Card> expansionCardObjs;
+	
+	private void spawnExpansion(Node2D location, CityExpansion e){
+		Card cardInstance = card.Instantiate<Card>();
+		AddChild(cardInstance);
+		cardInstance.SetExpansionType(e);
+		cardInstance.GlobalTransform = location.GlobalTransform;
+		expansionCardObjs.Add(cardInstance);
+	}
+	
 	public void setExpansions(ExpansionCardAmnts ecs){
-		//TODO spawn cards+delete old ones
+		foreach(Card c in expansionCardObjs) c.QueueFree();
+		expansionCardObjs.Clear();
+		
+		if(ecs.castle > 0) spawnExpansion(castleStart, CityExpansion.Castle);
+		if(ecs.university > 0) spawnExpansion(universityStart, CityExpansion.University);
+		if(ecs.church > 0) spawnExpansion(churchStart, CityExpansion.Church);
+		if(ecs.tradersGuild > 0) spawnExpansion(tradersGuildStart, CityExpansion.TradersGuild);
+		if(ecs.cityHall > 0) spawnExpansion(cityHallStart, CityExpansion.CityHall);
+		if(ecs.library > 0) spawnExpansion(libraryStart, CityExpansion.Library);
 	}
 	
 	
@@ -187,7 +207,6 @@ public partial class Player : Node2D
 	[Export] Control TradeInterface;
 	[Export] Control BuyInterface;
 	[Export] Control ExpansionInterface;
-	[Export] Control OtherPlayerHandCards;
 	
 	public void GeneralBack(){ GameInterface.Show(); TradeInterface.Hide(); BuyInterface.Hide(); }
 	
@@ -201,7 +220,7 @@ public partial class Player : Node2D
 	public void BuyExpansionButton(){ BuyInterface.Hide(); ExpansionInterface.Show(); }
 	public void BuyKnightButton(){ buySelectedCallback("Knight", false); }
 	
-	public void BuyLibraryButton(){ buySelectedCallback("Libray", true); }
+	public void BuyLibraryButton(){ buySelectedCallback("Library", true); }
 	public void BuyChurchButton(){ buySelectedCallback("Church", true); }
 	public void BuyCastleButton(){ buySelectedCallback("Castle", true); }
 	public void BuyUniversityButton(){ buySelectedCallback("University", true); }

@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://cw808se74p7ul" path="res://Mats/PlayerIcon3.png" id="5_xqtnk"]
 [ext_resource type="Texture2D" uid="uid://cnrp67b331b66" path="res://Mats/PlayerIcon4.png" id="6_51di4"]
 
-[node name="Main2d" type="Node2D" node_paths=PackedStringArray("textField", "MainPlayer", "otherPlayers", "marketStart", "marketBtn", "playerTradeBtn", "IPEdit", "GameIDEdit", "UserNameEdit", "AvatarSelector", "ConnectionInterface", "GameInterface")]
+[node name="Main2d" type="Node2D" node_paths=PackedStringArray("textField", "MainPlayer", "otherPlayers", "marketStart", "marketBtn", "playerTradeBtn", "playerStealGuildBtn", "playerLibraryTradeBtn", "OtherPlayerHandCards", "otherPlayerScroller", "IPEdit", "GameIDEdit", "UserNameEdit", "AvatarSelector", "ConnectionInterface", "GameInterface")]
 script = ExtResource("1_ij0h5")
 textField = NodePath("CanvasLayer/RichTextLabel")
 MainPlayer = NodePath("Player2d")
@@ -17,6 +17,10 @@ card = ExtResource("2_ne6ia")
 marketStart = NodePath("MarketStart")
 marketBtn = NodePath("CanvasLayer/InteractionPanel/TradeInterface/MarketTradeButton")
 playerTradeBtn = NodePath("CanvasLayer/InteractionPanel/TradeInterface/PlayerTradeButton")
+playerStealGuildBtn = NodePath("CanvasLayer/InteractionPanel/TradeInterface/PlayerStealGuild")
+playerLibraryTradeBtn = NodePath("CanvasLayer/InteractionPanel/TradeInterface/PlayerStealLibrary")
+OtherPlayerHandCards = NodePath("CanvasLayer/OtherPlayerHandCards")
+otherPlayerScroller = NodePath("CanvasLayer/OtherPlayerHandCards/ScrollContainer/HBoxContainer")
 IPEdit = NodePath("CanvasLayer/InteractionPanel/ConnectionInterface/IPEdit")
 GameIDEdit = NodePath("CanvasLayer/InteractionPanel/ConnectionInterface/GameIDEdit")
 UserNameEdit = NodePath("CanvasLayer/InteractionPanel/ConnectionInterface/UserNameEdit")
@@ -80,21 +84,6 @@ offset_bottom = -0.0559998
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-
-[node name="ConfirmSteal" type="Button" parent="CanvasLayer/OtherPlayerHandCards"]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.096
-anchor_top = 0.818
-anchor_right = 0.904
-anchor_bottom = 0.936
-offset_left = -0.0639877
-offset_top = 0.0479889
-offset_right = 0.0639648
-offset_bottom = -0.104019
-grow_horizontal = 2
-grow_vertical = 2
-text = "Steal"
 
 [node name="InteractionPanel" type="Panel" parent="CanvasLayer"]
 anchors_preset = -1
@@ -308,7 +297,7 @@ offset_right = -0.0800171
 offset_bottom = 0.107986
 grow_horizontal = 2
 grow_vertical = 2
-text = "Steal using Library"
+text = "Trade using Library"
 
 [node name="PlayerStealGuild" type="Button" parent="CanvasLayer/InteractionPanel/TradeInterface"]
 layout_mode = 1
@@ -559,7 +548,7 @@ grow_horizontal = 2
 grow_vertical = 2
 text = "Back"
 
-[node name="Player2d" parent="." node_paths=PackedStringArray("resCardStart", "habitatStart", "roadsStart", "knightStart", "scroller", "castleStart", "universityeStart", "churchStart", "tradersGuildStart", "cityHallStart", "libraryStart", "ConnectionInterface", "GameInterface", "TradeInterface", "BuyInterface", "ExpansionInterface") instance=ExtResource("3_6pgo2")]
+[node name="Player2d" parent="." node_paths=PackedStringArray("resCardStart", "habitatStart", "roadsStart", "knightStart", "scroller", "castleStart", "universityStart", "churchStart", "tradersGuildStart", "cityHallStart", "libraryStart", "ConnectionInterface", "GameInterface", "TradeInterface", "BuyInterface", "ExpansionInterface") instance=ExtResource("3_6pgo2")]
 position = Vector2(216, 264)
 resCardStart = NodePath("ResCards")
 habitatStart = NodePath("Habitat")
@@ -568,7 +557,7 @@ knightStart = NodePath("Knight")
 isMainPlayer = true
 scroller = NodePath("../CanvasLayer/ScrollContainer/HBoxContainer")
 castleStart = NodePath("CastleSp")
-universityeStart = NodePath("UniversitySp")
+universityStart = NodePath("UniversitySp")
 churchStart = NodePath("ChurchSp")
 tradersGuildStart = NodePath("TradersGuildSp")
 cityHallStart = NodePath("CityHallSp")
@@ -592,22 +581,22 @@ position = Vector2(448, 296)
 position = Vector2(576, 296)
 
 [node name="ChurchSp" type="Node2D" parent="Player2d"]
-position = Vector2(672, 176)
+position = Vector2(768, 176)
 
 [node name="CastleSp" type="Node2D" parent="Player2d"]
-position = Vector2(672, 264)
+position = Vector2(768, 264)
 
 [node name="UniversitySp" type="Node2D" parent="Player2d"]
-position = Vector2(816, 176)
+position = Vector2(912, 176)
 
 [node name="TradersGuildSp" type="Node2D" parent="Player2d"]
-position = Vector2(824, 264)
+position = Vector2(912, 264)
 
 [node name="CityHallSp" type="Node2D" parent="Player2d"]
-position = Vector2(752, 264)
+position = Vector2(840, 264)
 
 [node name="LibrarySp" type="Node2D" parent="Player2d"]
-position = Vector2(744, 176)
+position = Vector2(840, 176)
 
 [node name="MarketStart" type="Node2D" parent="."]
 position = Vector2(448, 64)
@@ -641,6 +630,8 @@ position = Vector2(1856, 792)
 [connection signal="button_down" from="CanvasLayer/InteractionPanel/GameInterface/EndTurnButton" to="Player2d" method="EndTurnButton"]
 [connection signal="button_down" from="CanvasLayer/InteractionPanel/TradeInterface/MarketTradeButton" to="." method="MarketTradeBtn"]
 [connection signal="button_down" from="CanvasLayer/InteractionPanel/TradeInterface/PlayerTradeButton" to="." method="PlayerTradeBtn"]
+[connection signal="button_down" from="CanvasLayer/InteractionPanel/TradeInterface/PlayerStealLibrary" to="." method="PlayerTradeLibraryBtn"]
+[connection signal="button_down" from="CanvasLayer/InteractionPanel/TradeInterface/PlayerStealGuild" to="." method="PlayerStealGuildBtn"]
 [connection signal="button_down" from="CanvasLayer/InteractionPanel/TradeInterface/TradeBack" to="Player2d" method="GeneralBack"]
 [connection signal="button_down" from="CanvasLayer/InteractionPanel/BuyInterface/StreetButton" to="Player2d" method="BuyStreetButton"]
 [connection signal="button_down" from="CanvasLayer/InteractionPanel/BuyInterface/VillageButton" to="Player2d" method="BuyVillageButton"]

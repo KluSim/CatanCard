@@ -73,10 +73,10 @@ public class TCPTestClient{
 			Console.WriteLine("Couldn't connect, trying again");
 			System.Threading.Thread.Sleep(1000);
 		}
-		catch(InvalidOperationException bozoDown){
+		catch(Exception bozoDown){
 			Console.WriteLine("Server Died");
 			System.Threading.Thread.Sleep(1000);
-		} 
+		}
 		}    
 	}  	
 
@@ -132,6 +132,7 @@ public partial class Main : Node2D
 		marketCards = new List<Card>();
 		playerIcons = new List<Card>();
 		serverMsgs = new Queue<ServerToClient>();
+		otherPlayerHandCardObjs = new List<Card>();
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -139,6 +140,7 @@ public partial class Main : Node2D
 	{
 		while(serverMsgs.Count != 0){
 			ServerToClient serverMessage = serverMsgs.Dequeue();
+			GD.Print(serverMessage.kind);
 			if(serverMessage.kind == "update" || serverMessage.kind == "init"){
 				if(serverMessage.kind == "init"){
 					ConnectionInterface.Hide();
@@ -180,14 +182,43 @@ public partial class Main : Node2D
 						MainPlayer.setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
 						continue;
 					}
-					otherPlayers[count].setExpansions(new ExpansionCardAmnts(sr.players[i].yourExpansions));
 					otherPlayers[count].setPlayerName(currPlayerName);
 					otherPlayers[count].setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
 					otherPlayers[count].SetUnknownRes(Int32.Parse(sr.players[i].numOfCards));
+					//otherPlayers[count].setExpansions(new ExpansionCardAmnts(sr.players[i].yourExpansions));
 					Card c = otherPlayers[count].SetPlayerIcon(Int32.Parse(sr.players[i].iconIndex));
 					if(c != null) playerIcons.Add(c);
 					count++;
 				}
+			}
+			
+			if(serverMessage.kind == "demandedPlayerInfo"){
+				foreach(Card c in otherPlayerHandCardObjs) c.QueueFree();
+				GD.Print(1);
+				otherPlayerHandCardObjs.Clear();
+				foreach(TextureRect n in otherPlayerScroller.GetChildren()){
+					otherPlayerScroller.RemoveChild(n);
+					n.QueueFree();
+				}
+				
+				Schriftrolle sr = serverMessage.schriftrolle;
+				RessourceCardAmnts otherPlayerCardsAmnts = new RessourceCardAmnts(sr.yourRes);
+				foreach(RessourceCard r in Enum.GetValues(typeof(RessourceCard))) {
+					int num = otherPlayerCardsAmnts.correspondingAmnt(r);
+					if(num == 0) continue;
+					Card cardInstance = card.Instantiate<Card>();
+					cardInstance.isSelectable = true;
+					cardInstance.selectedCallback = OtherPlayerResSelected;
+					AddChild(cardInstance);
+					TextureRect c = cardInstance.GetChild(0) as TextureRect;
+					cardInstance.RemoveChild(c);
+					otherPlayerScroller.AddChild(c);
+					//cardInstance.setPlayer(this);
+					otherPlayerHandCardObjs.Add(cardInstance);
+					cardInstance.SetTypeRc(r);
+				}
+				
+				isPlayerLibraryTrading++;
 			}
 		}
 	}
@@ -228,6 +259,8 @@ public partial class Main : Node2D
 	
 	public void MarketTradeBtn(){
 		if(isPlayerTrading != 0) return;
+		if(isPlayerStealingGuild != 0) return;
+		if(isPlayerLibraryTrading != 0) return;
 		if(isTradingMarket == 0){
 			foreach(Card c in MainPlayer.resCardObjs) c.SetSelectNoCb(false);
 			foreach(Card c in marketCards) c.SetSelectNoCb(false);
@@ -243,16 +276,11 @@ public partial class Main : Node2D
 	[Export] Button playerTradeBtn;
 	int isPlayerTrading = 0;
 	
-	public void PlayerIconSelectedCallback(string type){
-		if(isPlayerTrading != 1) return;
-		client.SendMessage("StartPlayerSteal|" + type);
-		playerTradeBtn.Text = "Select Your Card";
-		isPlayerTrading++;
-	}
-	
 	public void PlayerTradeBtn(){
 		if(isTradingMarket != 0) return;
-		if(isPlayerTrading == 0){
+		if(isPlayerStealingGuild != 0) return;
+		if(isPlayerLibraryTrading != 0) return;
+		if(isPlayerTrading == 0){ 
 			foreach(Card c in MainPlayer.resCardObjs) c.SetSelectNoCb(false);
 			foreach(Card c in playerIcons) c.SetSelectNoCb(false);
 			playerTradeBtn.Text = "Select Player";
@@ -260,7 +288,72 @@ public partial class Main : Node2D
 		}
 	}
 	
+	// player steal with Guild
+	[Export] Button playerStealGuildBtn;
+	int isPlayerStealingGuild = 0;
+	
+	public void PlayerStealGuildBtn(){
+		if(isTradingMarket != 0) return;
+		if(isPlayerTrading != 0) return;
+		if(isPlayerLibraryTrading != 0) return;
+		if(isPlayerStealingGuild == 0){
+			foreach(Card c in playerIcons) c.SetSelectNoCb(false);
+			playerStealGuildBtn.Text = "Select Player";
+			isPlayerStealingGuild = 1;
+		}
+	}
+	
+	// player trade with Library
+	
+	[Export] Button playerLibraryTradeBtn;
+	[Export] Control OtherPlayerHandCards;
+	[Export] HBoxContainer otherPlayerScroller;
+	List<Card> otherPlayerHandCardObjs;
+	int isPlayerLibraryTrading = 0;
+	
+	public void PlayerTradeLibraryBtn(){
+		if(isTradingMarket != 0) return;
+		if(isPlayerTrading != 0) return;
+		if(isPlayerStealingGuild != 0) return;
+		if(isPlayerLibraryTrading == 0){
+			foreach(Card c in playerIcons) c.SetSelectNoCb(false);
+			foreach(Card c in MainPlayer.resCardObjs) c.SetSelectNoCb(false);
+			playerLibraryTradeBtn.Text = "Select Player";
+			isPlayerLibraryTrading = 1;
+		}
+	} 
+	
+	public void OtherPlayerResSelected(string type){
+		if(isPlayerLibraryTrading == 3){
+			client.SendMessage("PlayerSelectLib|" + type);
+			playerLibraryTradeBtn.Text = "Select own card";
+			OtherPlayerHandCards.Hide();
+			isPlayerLibraryTrading++;
+		}
+	}
+	
 	// Method needed for multiple trades
+	
+	public void PlayerIconSelectedCallback(string type){
+		if(isPlayerTrading == 1){
+			client.SendMessage("StartPlayerSteal|" + type);
+			playerTradeBtn.Text = "Select Your Card";
+			isPlayerTrading++;
+		}
+		
+		if(isPlayerStealingGuild == 1){
+			client.SendMessage("PlayerStealGuild|" + type);
+			playerStealGuildBtn.Text = "Steal using Traders Guild";
+			isPlayerStealingGuild = 0;
+		}
+		
+		if(isPlayerLibraryTrading == 1){
+			client.SendMessage("PlayerTradeLib|" + type);
+			playerLibraryTradeBtn.Text = "Select Resource Card";
+			OtherPlayerHandCards.Show();
+			isPlayerLibraryTrading++;
+		}
+	}
 	
 	public void playerResSelectedCallback(string type){
 		if(isTradingMarket == 2){
@@ -273,6 +366,12 @@ public partial class Main : Node2D
 			client.SendMessage("EndPlayerSteal|"+type);
 			playerTradeBtn.Text = "Trade with Player";
 			isPlayerTrading = 0;
+		}
+		
+		if(isPlayerLibraryTrading == 4){
+			client.SendMessage("EndPlayerSteal|"+type);
+			playerLibraryTradeBtn.Text = "Trade using Library";
+			isPlayerLibraryTrading = 0;
 		}
 	}
 	
