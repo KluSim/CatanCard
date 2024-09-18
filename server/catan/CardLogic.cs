@@ -116,7 +116,7 @@ namespace shared
                     res = new RessourceCardAmnts(1,1,1,0,0);
                     break;
                 case BuildingCard.Expansion:
-                    res = new RessourceCardAmnts(0,1,3,0,0);
+                    res = new RessourceCardAmnts(0,2,3,0,0);
                     break;
                 default: //Street
                     res = new RessourceCardAmnts(0,0,0,1,1);
@@ -149,8 +149,9 @@ namespace shared
             clay = Int32.Parse(splited[4]);
         }
 
-        public RessourceCard takeRandomRes(){
+        public RessourceCard? takeRandomRes(){
             Random rnd = new Random();
+            if(total <= 0) return null;
             int nr = rnd.Next(0,total);
             if(nr < wheat) {wheat--; return RessourceCard.Wheat;}
             else if(nr < wheat+iron) {iron--; return RessourceCard.Iron;}
@@ -276,7 +277,6 @@ namespace shared
     }
 
     public class Schriftrolle{
-        public string kind = "Schriftrolle";
         public string markt {get; set;}
         public string destiny {get; set;}
         public string expansions {get; set;}

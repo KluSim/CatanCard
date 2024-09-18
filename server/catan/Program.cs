@@ -20,10 +20,11 @@ namespace catan{
         BuildingCardAmnts buildingCards;
         ExpansionCardAmnts expansionCards;
         Dictionary<BuildingCard, bool> canBuild;
-        int availableTrades = 0;
+        public int availableTrades = 0;
         public NetworkStream stream;
         public bool isConnected = true;
         public int iconIndex;
+        bool universityTradeMade = false;
 
         public PlayerState(string playerName, NetworkStream ns, int iconIndex){
             this.stream = ns;
@@ -31,7 +32,7 @@ namespace catan{
             this.iconIndex = iconIndex;
             //resCards = new RessourceCardAmnts();
             buildingCards = new BuildingCardAmnts(1,0,0,0,1);
-            expansionCards = new ExpansionCardAmnts(0,0,0,0,0,0);
+            expansionCards = new ExpansionCardAmnts(1,0,0,0,0,0);
             canBuild = new Dictionary<BuildingCard, bool>();
             foreach(BuildingCard b in Enum.GetValues(typeof(BuildingCard))) canBuild.Add(b, true);
         }
@@ -57,7 +58,9 @@ namespace catan{
                     if(buildingCards.village <= 0) return false;
                     break;
                 case BuildingCard.Expansion:
+                    if(proposedExpansion == null) return false;
                     if(buildingCards.city <= 0) return false;
+                    if(expansionCards.correspondingAmnt(proposedExpansion.Value) >= 1) return false;
                     break;
             }
 
@@ -91,8 +94,7 @@ namespace catan{
 
             // resources replaced by university trade
             
-            if(expansionCards.university > 0) {
-                bool universityTradeMade = false;
+            if(expansionCards.university > 0 && !universityTradeMade) {
                 foreach(RessourceCard r1 in Enum.GetValues(typeof(RessourceCard))) {
                     if(cost.correspondingAmnt(r1) != 0 && !universityTradeMade){
                         foreach(RessourceCard r2 in Enum.GetValues(typeof(RessourceCard))){
@@ -139,6 +141,7 @@ namespace catan{
         }
 
         public void startTurn(){
+            universityTradeMade = false;
             foreach(KeyValuePair<BuildingCard, bool> kvp in canBuild ) canBuild[kvp.Key] = true;
             availableTrades = 1;
             if(buildingCards.street >= 2) availableTrades += (buildingCards.street - 1) / 2;
@@ -153,9 +156,9 @@ namespace catan{
         public bool startPlayerSteal(PlayerState other){
             if(availableTrades <= 0) return false;
             RessourceCardAmnts res = other.getRes();
-            RessourceCard stolenCard = res.takeRandomRes();
-            
-            resCards.correspondingAmnt(stolenCard)++;
+            RessourceCard? stolenCard = res.takeRandomRes();
+            if(stolenCard != null)
+                resCards.correspondingAmnt(stolenCard.Value)++;
             availableTrades--;
             return true;
         }
@@ -274,7 +277,7 @@ namespace catan{
             if(numberOfPlayers < 2 || numberOfPlayers > 4) Console.WriteLine("replace me with actual error handling. if you read this, haha your code does the big stupid");
             currentTurnPlayer = 0;
 
-            buildingPile = new BuildingCardAmnts(10,10,10,10,1);
+            buildingPile = new BuildingCardAmnts(10,10,10,10,10);
             expansionPile = new ExpansionCardAmnts(0,0,0,0,0,0); //TODO expansion amounts for n players is wrong, check with actual game
             if(numberOfPlayers == 2){ buildingPile = new BuildingCardAmnts(7,  7,  2, 5, 5); expansionPile = new ExpansionCardAmnts(1,1,1,1,1,1); }
             if(numberOfPlayers == 3){ buildingPile = new BuildingCardAmnts(11, 11, 4, 7, 7); expansionPile = new ExpansionCardAmnts(1,1,1,1,1,1); } 
@@ -283,21 +286,22 @@ namespace catan{
             drawPile = new RessourceCardAmnts(14, 16, 15, 11, 11);
 
             market = new RessourceCardAmnts();
-            for(int i = 0; i < 5; ++i) market.correspondingAmnt(drawPile.takeRandomRes()) += 1;
+            for(int i = 0; i < 5; ++i) market.correspondingAmnt(drawPile.takeRandomRes().Value) += 1;
         }
 
         public void ActionExecutor(string action, string[] parameters){
             PlayerState current = players[currentTurnPlayer];
-            if(playerTradingAction == 3 && action != "PlayerBibSelect") return;
+            if(playerTradingAction == 3 && action != "PlayerSelectLib") return;
+            if(playerTradingAction == 1 && action != "EndPlayerSteal") return;
             switch(action){
                 case "StartGame":
                     if(gameStarted) break;
                     init();
                     for(int i = 0; i < numberOfPlayers; i++){
                         RessourceCardAmnts initCards = new RessourceCardAmnts();
-                        initCards.correspondingAmnt(drawPile.takeRandomRes())++;
-                        initCards.correspondingAmnt(drawPile.takeRandomRes())++;
-                        initCards.correspondingAmnt(drawPile.takeRandomRes())++;
+                        initCards.correspondingAmnt(drawPile.takeRandomRes().Value)++;
+                        initCards.correspondingAmnt(drawPile.takeRandomRes().Value)++;
+                        initCards.correspondingAmnt(drawPile.takeRandomRes().Value)++;
                         players[i].init(initCards);
                     }
                     gameStarted = true;
@@ -306,7 +310,8 @@ namespace catan{
                     if(playerTradingAction != 0) break;
                     RessourceCardAmnts drawncards = new RessourceCardAmnts();
                     for(int i = 0; i < current.getDrawCards(); ++i){
-                        drawncards.correspondingAmnt(drawPile.takeRandomRes()) += 1;
+                        RessourceCard? c = drawPile.takeRandomRes();
+                        if(c != null) drawncards.correspondingAmnt(c.Value) += 1;
                     }
 
                     if(current.endTurn(drawncards)) break; //TODO END GAME
@@ -411,36 +416,41 @@ namespace catan{
                     break;
                 case "PlayerStealGuild":
                     if(parameters.Length < 1) break;
+                    if(current.availableTrades <= 0) break;
+                    if(current.getExpansions().correspondingAmnt(CityExpansion.TradersGuild) <= 0) break;
                     int stealethPlayerIndex = players.FindIndex(player  => player.playerName == parameters[0]);
                     if(stealethPlayerIndex == -1) break;
                     if(stealethPlayerIndex >= players.Count) break;
                     PlayerState stealethPlayer = players[stealethPlayerIndex];
                     if(stealethPlayer.calculateVictoryPoints() < current.calculateVictoryPoints()) break;
-                    RessourceCard stolenCard = stealethPlayer.resCards.takeRandomRes();
-                    current.resCards.correspondingAmnt(stolenCard)++;
+                    RessourceCard? stolenCard = stealethPlayer.resCards.takeRandomRes();
+                    if(stolenCard == null) break;
+                    current.resCards.correspondingAmnt(stolenCard.Value)++;
+                    current.availableTrades--;
                     break;
-                case "PlayerTradeBib":
+                case "PlayerTradeLib":
                     if(parameters.Length < 1) break;
-                    targetPlayer =players.FindIndex(player  => player.playerName == parameters[0]);
+                    if(current.availableTrades <= 0) break;
+                    targetPlayer = players.FindIndex(player  => player.playerName == parameters[0]);
                     if(targetPlayer == -1) break;
                     if(targetPlayer >= players.Count) break;
                     PlayerState tradethPlayer = players[targetPlayer];
                     Schriftrolle sr = new Schriftrolle();
-                    sr.kind = "demandedPlayerInfo";
                     sr.yourRes = tradethPlayer.resCards.stringify();
                     ServerToClient toClient = new ServerToClient(sr, false);
+                    toClient.kind = "demandedPlayerInfo";
                     string jsonString = JsonSerializer.Serialize(toClient.decode());
                     playerTradingAction = 3;
                     current.stream.WriteAsync(Encoding.ASCII.GetBytes(jsonString));
                     break;
-                case "PlayerBibSelect":
+                case "PlayerSelectLib":
                     if(parameters.Length < 1) break;
                     RessourceCard rc = RessourceCardMths.toEnum(parameters[0]);
                     PlayerState tradethPlayer2 = players[targetPlayer];
                     if(tradethPlayer2.resCards.correspondingAmnt(rc)<=0) break;
                     tradethPlayer2.resCards.correspondingAmnt(rc)--;
                     current.resCards.correspondingAmnt(rc)++;
-                    playerTradingAction = 0;
+                    playerTradingAction = 1;
                     break;
                 //current.startTurn();
                 // player builds shit (player actions)
