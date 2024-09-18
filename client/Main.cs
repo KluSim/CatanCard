@@ -72,7 +72,11 @@ public class TCPTestClient{
 			//Console.WriteLine("Socket exception: " + socketException);         
 			Console.WriteLine("Couldn't connect, trying again");
 			System.Threading.Thread.Sleep(1000);
-		} 
+		}
+		catch(Exception bozoDown){
+			Console.WriteLine("Server Died");
+			System.Threading.Thread.Sleep(1000);
+		}
 		}    
 	}  	
 
@@ -113,6 +117,7 @@ public partial class Main : Node2D
 	private TextEdit textEdit;
 
 	private List<Card> marketCards;
+	private List<Card> playerIcons;
 
 	Queue<ServerToClient> serverMsgs;
 	[Export] Player MainPlayer;
@@ -125,7 +130,9 @@ public partial class Main : Node2D
 	{
 		base._Ready();
 		marketCards = new List<Card>();
+		playerIcons = new List<Card>();
 		serverMsgs = new Queue<ServerToClient>();
+		otherPlayerHandCardObjs = new List<Card>();
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -133,6 +140,7 @@ public partial class Main : Node2D
 	{
 		while(serverMsgs.Count != 0){
 			ServerToClient serverMessage = serverMsgs.Dequeue();
+			GD.Print(serverMessage.kind);
 			if(serverMessage.kind == "update" || serverMessage.kind == "init"){
 				if(serverMessage.kind == "init"){
 					ConnectionInterface.Hide();
@@ -150,7 +158,7 @@ public partial class Main : Node2D
 					int num = marketCardsAmnts.correspondingAmnt(r);
 					for(int i = 0; i < num; i++){
 						Card cardInstance = card.Instantiate<Card>();
-						cardInstance.isMarketCard = true;
+						cardInstance.isSelectable = true;
 						cardInstance.selectedCallback = marketCardSelectedCallback;
 						AddChild(cardInstance);
 						cardInstance.GlobalTransform = marketStart.GlobalTransform;
@@ -164,18 +172,53 @@ public partial class Main : Node2D
 				int count = 0;
 				MainPlayer.SetRes(new RessourceCardAmnts(sr.yourRes));
 				
+				
 				for(int i = 0; i < sr.players.Length; i++){
 					if(sr.players[i] == null) break;
 					string currPlayerName = sr.players[i].playerName;
 					if(currPlayerName == client.username){
+						MainPlayer.setExpansions(new ExpansionCardAmnts(sr.players[i].yourExpansions));
+						MainPlayer.setPlayerName(currPlayerName);
 						MainPlayer.setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
 						continue;
 					}
-					
+					otherPlayers[count].setPlayerName(currPlayerName);
 					otherPlayers[count].setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
 					otherPlayers[count].SetUnknownRes(Int32.Parse(sr.players[i].numOfCards));
+					//otherPlayers[count].setExpansions(new ExpansionCardAmnts(sr.players[i].yourExpansions));
+					Card c = otherPlayers[count].SetPlayerIcon(Int32.Parse(sr.players[i].iconIndex));
+					if(c != null) playerIcons.Add(c);
 					count++;
 				}
+			}
+			
+			if(serverMessage.kind == "demandedPlayerInfo"){
+				foreach(Card c in otherPlayerHandCardObjs) c.QueueFree();
+				GD.Print(1);
+				otherPlayerHandCardObjs.Clear();
+				foreach(TextureRect n in otherPlayerScroller.GetChildren()){
+					otherPlayerScroller.RemoveChild(n);
+					n.QueueFree();
+				}
+				
+				Schriftrolle sr = serverMessage.schriftrolle;
+				RessourceCardAmnts otherPlayerCardsAmnts = new RessourceCardAmnts(sr.yourRes);
+				foreach(RessourceCard r in Enum.GetValues(typeof(RessourceCard))) {
+					int num = otherPlayerCardsAmnts.correspondingAmnt(r);
+					if(num == 0) continue;
+					Card cardInstance = card.Instantiate<Card>();
+					cardInstance.isSelectable = true;
+					cardInstance.selectedCallback = OtherPlayerResSelected;
+					AddChild(cardInstance);
+					TextureRect c = cardInstance.GetChild(0) as TextureRect;
+					cardInstance.RemoveChild(c);
+					otherPlayerScroller.AddChild(c);
+					//cardInstance.setPlayer(this);
+					otherPlayerHandCardObjs.Add(cardInstance);
+					cardInstance.SetTypeRc(r);
+				}
+				
+				isPlayerLibraryTrading++;
 			}
 		}
 	}
@@ -201,6 +244,8 @@ public partial class Main : Node2D
 		client.SendMessage(cmd);
 	}
 	
+	// Market trade functions and vars
+	
 	[Export]
 	Button marketBtn;
 	int isTradingMarket = 0;
@@ -211,15 +256,11 @@ public partial class Main : Node2D
 		marketBtn.Text = "Select Your Card";
 		isTradingMarket++;
 	}
-
-	public void playerSelectedCallback(string type){
-		if(isTradingMarket == 2){
-			client.SendMessage("EndMarketTrade|"+type);
-			marketBtn.Text = "Trade with Market";
-			isTradingMarket = 0;
-		}
-	}
+	
 	public void MarketTradeBtn(){
+		if(isPlayerTrading != 0) return;
+		if(isPlayerStealingGuild != 0) return;
+		if(isPlayerLibraryTrading != 0) return;
 		if(isTradingMarket == 0){
 			foreach(Card c in MainPlayer.resCardObjs) c.SetSelectNoCb(false);
 			foreach(Card c in marketCards) c.SetSelectNoCb(false);
@@ -228,6 +269,110 @@ public partial class Main : Node2D
 		}
 		//if(!isTradingMarket) MarketTradeStart();
 		//else MarketTradeEnd();
+	}
+	
+	// Player trade functions and vars
+	
+	[Export] Button playerTradeBtn;
+	int isPlayerTrading = 0;
+	
+	public void PlayerTradeBtn(){
+		if(isTradingMarket != 0) return;
+		if(isPlayerStealingGuild != 0) return;
+		if(isPlayerLibraryTrading != 0) return;
+		if(isPlayerTrading == 0){ 
+			foreach(Card c in MainPlayer.resCardObjs) c.SetSelectNoCb(false);
+			foreach(Card c in playerIcons) c.SetSelectNoCb(false);
+			playerTradeBtn.Text = "Select Player";
+			isPlayerTrading = 1;
+		}
+	}
+	
+	// player steal with Guild
+	[Export] Button playerStealGuildBtn;
+	int isPlayerStealingGuild = 0;
+	
+	public void PlayerStealGuildBtn(){
+		if(isTradingMarket != 0) return;
+		if(isPlayerTrading != 0) return;
+		if(isPlayerLibraryTrading != 0) return;
+		if(isPlayerStealingGuild == 0){
+			foreach(Card c in playerIcons) c.SetSelectNoCb(false);
+			playerStealGuildBtn.Text = "Select Player";
+			isPlayerStealingGuild = 1;
+		}
+	}
+	
+	// player trade with Library
+	
+	[Export] Button playerLibraryTradeBtn;
+	[Export] Control OtherPlayerHandCards;
+	[Export] HBoxContainer otherPlayerScroller;
+	List<Card> otherPlayerHandCardObjs;
+	int isPlayerLibraryTrading = 0;
+	
+	public void PlayerTradeLibraryBtn(){
+		if(isTradingMarket != 0) return;
+		if(isPlayerTrading != 0) return;
+		if(isPlayerStealingGuild != 0) return;
+		if(isPlayerLibraryTrading == 0){
+			foreach(Card c in playerIcons) c.SetSelectNoCb(false);
+			foreach(Card c in MainPlayer.resCardObjs) c.SetSelectNoCb(false);
+			playerLibraryTradeBtn.Text = "Select Player";
+			isPlayerLibraryTrading = 1;
+		}
+	} 
+	
+	public void OtherPlayerResSelected(string type){
+		if(isPlayerLibraryTrading == 3){
+			client.SendMessage("PlayerSelectLib|" + type);
+			playerLibraryTradeBtn.Text = "Select own card";
+			OtherPlayerHandCards.Hide();
+			isPlayerLibraryTrading++;
+		}
+	}
+	
+	// Method needed for multiple trades
+	
+	public void PlayerIconSelectedCallback(string type){
+		if(isPlayerTrading == 1){
+			client.SendMessage("StartPlayerSteal|" + type);
+			playerTradeBtn.Text = "Select Your Card";
+			isPlayerTrading++;
+		}
+		
+		if(isPlayerStealingGuild == 1){
+			client.SendMessage("PlayerStealGuild|" + type);
+			playerStealGuildBtn.Text = "Steal using Traders Guild";
+			isPlayerStealingGuild = 0;
+		}
+		
+		if(isPlayerLibraryTrading == 1){
+			client.SendMessage("PlayerTradeLib|" + type);
+			playerLibraryTradeBtn.Text = "Select Resource Card";
+			OtherPlayerHandCards.Show();
+			isPlayerLibraryTrading++;
+		}
+	}
+	
+	public void playerResSelectedCallback(string type){
+		if(isTradingMarket == 2){
+			client.SendMessage("EndMarketTrade|"+type);
+			marketBtn.Text = "Trade with Market";
+			isTradingMarket = 0;
+		}
+		
+		if(isPlayerTrading == 2){
+			client.SendMessage("EndPlayerSteal|"+type);
+			playerTradeBtn.Text = "Trade with Player";
+			isPlayerTrading = 0;
+		}
+		
+		if(isPlayerLibraryTrading == 4){
+			client.SendMessage("EndPlayerSteal|"+type);
+			playerLibraryTradeBtn.Text = "Trade using Library";
+			isPlayerLibraryTrading = 0;
+		}
 	}
 	
 	// CONNECTION STUFF HERE

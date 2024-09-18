@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://wk6olypje462"]
+[gd_scene load_steps=22 format=3 uid="uid://wk6olypje462"]
 
 [ext_resource type="Script" path="res://Card.cs" id="1_oxb0f"]
 [ext_resource type="Texture2D" uid="uid://duhbg3kcqd8uk" path="res://Mats/wood.png" id="2_08lo8"]
@@ -12,9 +12,15 @@
 [ext_resource type="Texture2D" uid="uid://c782t2yf4gysk" path="res://Mats/knight.png" id="9_drbul"]
 [ext_resource type="Texture2D" uid="uid://bgu8g2h7c1og4" path="res://icon.svg" id="10_5rt4h"]
 [ext_resource type="Texture2D" uid="uid://d06m6esh4r4xo" path="res://Mats/street.png" id="11_6dqts"]
+[ext_resource type="Texture2D" uid="uid://dyt1x0kphj3ok" path="res://Mats/University.png" id="12_55af0"]
 [ext_resource type="Texture2D" uid="uid://cietqvm0hetih" path="res://Mats/unknown_res.png" id="12_t7bxc"]
+[ext_resource type="Texture2D" uid="uid://fq8057n46fiv" path="res://Mats/PlayerIcon1.png" id="13_73b3s"]
 [ext_resource type="Texture2D" uid="uid://sesj7kqv34bs" path="res://Mats/victorypoint.png" id="13_a3ht5"]
+[ext_resource type="Texture2D" uid="uid://cckxh5ranrt6e" path="res://Mats/church.png" id="13_cp2vn"]
 [ext_resource type="Texture2D" uid="uid://cuubk7hatvb2h" path="res://Mats/empty.png" id="13_wsevk"]
+[ext_resource type="Texture2D" uid="uid://dlcvk367x31q4" path="res://Mats/PlayerIcon2.png" id="14_rj3by"]
+[ext_resource type="Texture2D" uid="uid://cw808se74p7ul" path="res://Mats/PlayerIcon3.png" id="15_j1mxa"]
+[ext_resource type="Texture2D" uid="uid://cnrp67b331b66" path="res://Mats/PlayerIcon4.png" id="16_dhvj4"]
 
 [node name="Card2d" type="Node2D" node_paths=PackedStringArray("textureSlot", "outline", "victorypoint")]
 script = ExtResource("1_oxb0f")
@@ -31,7 +37,10 @@ city = ExtResource("8_1yngv")
 knight = ExtResource("9_drbul")
 expansion = ExtResource("10_5rt4h")
 street = ExtResource("11_6dqts")
+university = ExtResource("12_55af0")
+church = ExtResource("13_cp2vn")
 unknown_res = ExtResource("12_t7bxc")
+playericons = Array[Texture2D]([ExtResource("13_73b3s"), ExtResource("14_rj3by"), ExtResource("15_j1mxa"), ExtResource("16_dhvj4")])
 
 [node name="movit" type="TextureRect" parent="."]
 clip_contents = true
@@ -51,10 +60,8 @@ grow_vertical = 2
 visible = false
 layout_mode = 1
 anchors_preset = -1
-anchor_right = 0.96
-anchor_bottom = 0.96
-offset_right = 4.0
-offset_bottom = 6.0
+anchor_right = 1.0
+anchor_bottom = 1.0
 texture = ExtResource("6_8w7e1")
 
 [node name="victory" type="TextureRect" parent="movit"]

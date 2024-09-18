@@ -10,8 +10,6 @@ public partial class Player : Node2D
 	PackedScene card;
 	[Export]
 	Node2D resCardStart;
-	[Export]
-	Node2D tmpCardsStart;
 	
 	[Export]
 	Node2D habitatStart;
@@ -19,10 +17,14 @@ public partial class Player : Node2D
 	Node2D roadsStart;
 	[Export]
 	Node2D knightStart;
+	[Export]
+	Node2D PlayerIconStart;
 	
 	[Export]
 	public bool isMainPlayer;
 	public int playerIcon;
+	public string playerName;
+	private bool iconHasBeenSpawned = false;
 	[Export] public HBoxContainer scroller;
 	
 	public List<Card> resCardObjs;
@@ -49,6 +51,7 @@ public partial class Player : Node2D
 		streetCardObjs = new List<Card>();
 		inhabitCardObjs = new List<Card>();
 		knightCardObjs = new List<Card>();
+		expansionCardObjs = new List<Card>();
 	}
 
 	public void init(TCPTestClient cl, int playerIcon){
@@ -63,44 +66,14 @@ public partial class Player : Node2D
 
 	public void buySelectedCallback(string type, bool isExpansion){
 		if(client == null) return;
-		if(isExpansion) return; //TODO this is dumb
 		string resources = type;
+		if(isExpansion) resources = "Expansion," + resources;
 		foreach(Card c in resCardObjs) if(c.isSelected) resources += "," + c.type;
 		client.SendMessage("Buy|"+resources);
 	}
-	private void OnBuyBtnDown(){
-		//client.SendMessage("EndTurn|");
-		if(!showingBuyOptins){
-			foreach(BuildingCard r in Enum.GetValues(typeof(BuildingCard))) {
-				Card cardInstance = card.Instantiate<Card>();
-				AddChild(cardInstance);
-				cardInstance.GlobalTransform = tmpCardsStart.GlobalTransform;
-				cardInstance.setPlayer(this);
-				tmpCardObjs.Add(cardInstance);
-				cardInstance.MoveLocalX((tmpCardObjs.Count-1)*80f);
-				cardInstance.SetTypeBuy(r);
-				//cardInstance.selectedCallback = buySelectedCallback;
-			}
-			showingBuyOptins = true;
-		}
-		else{
-			foreach(Card c in tmpCardObjs) c.QueueFree();
-			tmpCardObjs.Clear();
-			showingBuyOptins = false;
-		}
-	}
-
-	public void AddRes(RessourceCard rc){
-		resCards.correspondingAmnt(rc)+=1;
-		Card cardInstance = card.Instantiate<Card>();
-		AddChild(cardInstance);
-		cardInstance.GlobalTransform = resCardStart.GlobalTransform;
-		cardInstance.setPlayer(this);
-		cardInstance.MoveLocalX((resCardObjs.Count-1)*110f);
-		resCardObjs.Add(cardInstance);
-		cardInstance.SetTypeRc(rc);
-	}
-
+	
+	public void setPlayerName(string n){ playerName = n; }
+	
 	public void SetRes(RessourceCardAmnts rca){
 		resCards = rca;
 		foreach(Card c in resCardObjs) c.QueueFree();
@@ -113,15 +86,14 @@ public partial class Player : Node2D
 			int num = resCards.correspondingAmnt(r);
 			for(int i = 0; i < num; i++){
 				Card cardInstance = card.Instantiate<Card>();
-				cardInstance.selectedCallback = GetParent<Main>().playerSelectedCallback;
+				cardInstance.isSelectable = true;
+				cardInstance.selectedCallback = GetParent<Main>().playerResSelectedCallback;
 				AddChild(cardInstance);
 				TextureRect c = cardInstance.GetChild(0) as TextureRect;
 				cardInstance.RemoveChild(c);
 				scroller.AddChild(c);
-				cardInstance.GlobalTransform = resCardStart.GlobalTransform;
 				cardInstance.setPlayer(this);
 				resCardObjs.Add(cardInstance);
-				cardInstance.MoveLocalX((resCardObjs.Count-1)*100f);
 				cardInstance.SetTypeRc(r);
 			}
 		}
@@ -140,6 +112,20 @@ public partial class Player : Node2D
 			cardInstance.SetTypeUnknown();
 		}
 	}
+	
+	public Card SetPlayerIcon(int i){
+		if(iconHasBeenSpawned) return null;
+		Card cardInstance = card.Instantiate<Card>();
+		cardInstance.isSelectable = true; 
+		AddChild(cardInstance);
+		cardInstance.setPlayer(this);
+		cardInstance.setPlayerIcon(i);
+		cardInstance.selectedCallback = GetParent<Main>().PlayerIconSelectedCallback;
+		cardInstance.ZIndex = -69; 
+		cardInstance.GlobalTransform = PlayerIconStart.GlobalTransform;
+		iconHasBeenSpawned = true;
+		return cardInstance;
+	}
 
 	public void setBuildings(BuildingCardAmnts bca){
 		buildCards = bca;
@@ -152,6 +138,7 @@ public partial class Player : Node2D
 		foreach(BuildingCard r in Enum.GetValues(typeof(BuildingCard))) {
 			int num = buildCards.correspondingAmnt(r);
 			for(int i = 0; i < num; i++){
+				if(r == BuildingCard.Expansion) continue; 
 				Card cardInstance = card.Instantiate<Card>();
 				AddChild(cardInstance);
 				cardInstance.SetTypeBuy(r);
@@ -181,6 +168,34 @@ public partial class Player : Node2D
 		}
 	}
 	
+	[Export] Node2D castleStart;
+	[Export] Node2D universityStart;
+	[Export] Node2D churchStart;
+	[Export] Node2D tradersGuildStart;
+	[Export] Node2D cityHallStart;
+	[Export] Node2D libraryStart;
+	
+	List<Card> expansionCardObjs;
+	
+	private void spawnExpansion(Node2D location, CityExpansion e){
+		Card cardInstance = card.Instantiate<Card>();
+		AddChild(cardInstance);
+		cardInstance.SetExpansionType(e);
+		cardInstance.GlobalTransform = location.GlobalTransform;
+		expansionCardObjs.Add(cardInstance);
+	}
+	
+	public void setExpansions(ExpansionCardAmnts ecs){
+		foreach(Card c in expansionCardObjs) c.QueueFree();
+		expansionCardObjs.Clear();
+		
+		if(ecs.castle > 0) spawnExpansion(castleStart, CityExpansion.Castle);
+		if(ecs.university > 0) spawnExpansion(universityStart, CityExpansion.University);
+		if(ecs.church > 0) spawnExpansion(churchStart, CityExpansion.Church);
+		if(ecs.tradersGuild > 0) spawnExpansion(tradersGuildStart, CityExpansion.TradersGuild);
+		if(ecs.cityHall > 0) spawnExpansion(cityHallStart, CityExpansion.CityHall);
+		if(ecs.library > 0) spawnExpansion(libraryStart, CityExpansion.Library);
+	}
 	
 	
 	//
@@ -192,7 +207,6 @@ public partial class Player : Node2D
 	[Export] Control TradeInterface;
 	[Export] Control BuyInterface;
 	[Export] Control ExpansionInterface;
-	[Export] Control OtherPlayerHandCards;
 	
 	public void GeneralBack(){ GameInterface.Show(); TradeInterface.Hide(); BuyInterface.Hide(); }
 	
@@ -200,22 +214,14 @@ public partial class Player : Node2D
 	public void TradeButton(){ GameInterface.Hide(); TradeInterface.Show(); }
 	public void EndTurnButton(){ client.SendMessage("EndTurn|"); }
 	
-	public void PlayerTradeButton(){ /*TODO*/ }
-	public void PlayerStealLibraryButton(){ 
-		client.SendMessage("PlayerTradeBib|"); //TODO get Player Index
-	}
-	
-	public void PlayerStealGuildButton(){
-		
-	}
-	
 	public void BuyStreetButton(){ buySelectedCallback("Street", false); }
 	public void BuyVillageButton(){ buySelectedCallback("Village", false); }
 	public void BuyCityButton(){ buySelectedCallback("City", false); }
 	public void BuyExpansionButton(){ BuyInterface.Hide(); ExpansionInterface.Show(); }
 	public void BuyKnightButton(){ buySelectedCallback("Knight", false); }
 	
-	public void BuyLibraryButton(){ buySelectedCallback("Libray", true); }
+	public void BuyLibraryButton(){ buySelectedCallback("Library", true); }
+	public void BuyChurchButton(){ buySelectedCallback("Church", true); }
 	public void BuyCastleButton(){ buySelectedCallback("Castle", true); }
 	public void BuyUniversityButton(){ buySelectedCallback("University", true); }
 	public void BuyTradersGuildButton(){ buySelectedCallback("TradersGuild", true); }
