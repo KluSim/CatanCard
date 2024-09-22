@@ -8,11 +8,12 @@
 [ext_resource type="Texture2D" uid="uid://cw808se74p7ul" path="res://Mats/PlayerIcon3.png" id="5_xqtnk"]
 [ext_resource type="Texture2D" uid="uid://cnrp67b331b66" path="res://Mats/PlayerIcon4.png" id="6_51di4"]
 
-[node name="Main2d" type="Node2D" node_paths=PackedStringArray("textField", "MainPlayer", "otherPlayers", "marketStart", "marketBtn", "playerTradeBtn", "playerStealGuildBtn", "playerLibraryTradeBtn", "OtherPlayerHandCards", "otherPlayerScroller", "IPEdit", "GameIDEdit", "UserNameEdit", "AvatarSelector", "ConnectionInterface", "GameInterface")]
+[node name="Main2d" type="Node2D" node_paths=PackedStringArray("textField", "LogTextEdit", "MainPlayer", "otherPlayers", "marketStart", "marketBtn", "playerTradeBtn", "playerStealGuildBtn", "playerLibraryTradeBtn", "OtherPlayerHandCards", "otherPlayerScroller", "IPEdit", "GameIDEdit", "UserNameEdit", "AvatarSelector", "ConnectionInterface", "GameInterface")]
 script = ExtResource("1_ij0h5")
 textField = NodePath("CanvasLayer/RichTextLabel")
+LogTextEdit = NodePath("CanvasLayer/InteractionPanel/LogTextEdit")
 MainPlayer = NodePath("Player2d")
-otherPlayers = [NodePath("Player2d2")]
+otherPlayers = [NodePath("Player2d2"), NodePath("Player2d3"), NodePath("Player2d4")]
 card = ExtResource("2_ne6ia")
 marketStart = NodePath("MarketStart")
 marketBtn = NodePath("CanvasLayer/InteractionPanel/TradeInterface/MarketTradeButton")
@@ -45,11 +46,11 @@ anchors_preset = -1
 anchor_left = 0.25
 anchor_top = 0.8
 anchor_right = 0.715
-anchor_bottom = 0.926
-offset_left = -8.0
+anchor_bottom = 0.941
+offset_left = -32.0
 offset_top = -8.0
-offset_right = -0.800049
-offset_bottom = 15.9199
+offset_right = -24.8002
+offset_bottom = -0.28009
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/ScrollContainer"]
 layout_mode = 2
@@ -73,12 +74,12 @@ layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.041
 anchor_top = 0.061
-anchor_right = 0.973
-anchor_bottom = 0.629
+anchor_right = 0.967
+anchor_bottom = 0.429
 offset_left = 0.0559998
 offset_top = -0.104002
-offset_right = -0.232056
-offset_bottom = -0.0559998
+offset_right = 5.60791
+offset_bottom = -0.0515137
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/OtherPlayerHandCards/ScrollContainer"]
 layout_mode = 2
@@ -93,6 +94,7 @@ offset_right = -0.320007
 offset_bottom = 8.55994
 
 [node name="ConnectionInterface" type="Control" parent="CanvasLayer/InteractionPanel"]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -192,7 +194,6 @@ popup/item_3/icon = ExtResource("6_51di4")
 popup/item_3/id = 3
 
 [node name="GameInterface" type="Control" parent="CanvasLayer/InteractionPanel"]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -548,6 +549,21 @@ grow_horizontal = 2
 grow_vertical = 2
 text = "Back"
 
+[node name="LogTextEdit" type="RichTextLabel" parent="CanvasLayer/InteractionPanel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.064
+anchor_top = 0.777
+anchor_right = 0.936
+anchor_bottom = 0.985
+offset_left = -0.0639992
+offset_top = 0.0631104
+offset_right = 0.0639954
+offset_bottom = 0.215088
+grow_horizontal = 2
+grow_vertical = 2
+scroll_following = true
+
 [node name="Player2d" parent="." node_paths=PackedStringArray("resCardStart", "habitatStart", "roadsStart", "knightStart", "scroller", "castleStart", "universityStart", "churchStart", "tradersGuildStart", "cityHallStart", "libraryStart", "ConnectionInterface", "GameInterface", "TradeInterface", "BuyInterface", "ExpansionInterface") instance=ExtResource("3_6pgo2")]
 position = Vector2(216, 264)
 resCardStart = NodePath("ResCards")
@@ -601,27 +617,145 @@ position = Vector2(840, 176)
 [node name="MarketStart" type="Node2D" parent="."]
 position = Vector2(448, 64)
 
-[node name="Player2d2" parent="." node_paths=PackedStringArray("resCardStart", "habitatStart", "roadsStart", "knightStart", "PlayerIconStart") instance=ExtResource("3_6pgo2")]
+[node name="Player2d2" parent="." node_paths=PackedStringArray("resCardStart", "habitatStart", "roadsStart", "knightStart", "PlayerIconStart", "castleStart", "universityStart", "churchStart", "tradersGuildStart", "cityHallStart", "libraryStart") instance=ExtResource("3_6pgo2")]
 resCardStart = NodePath("ResCards")
 habitatStart = NodePath("Habitat")
 roadsStart = NodePath("Roads")
 knightStart = NodePath("Knight")
 PlayerIconStart = NodePath("PlayerIcon")
+castleStart = NodePath("CastleStart")
+universityStart = NodePath("UniversityStart")
+churchStart = NodePath("ChurchStart")
+tradersGuildStart = NodePath("TradersGuild")
+cityHallStart = NodePath("CityHallStart")
+libraryStart = NodePath("LibraryStart")
 
 [node name="PlayerIcon" type="Node2D" parent="Player2d2"]
-position = Vector2(1552, 864)
+position = Vector2(1448, 864)
 
 [node name="Roads" type="Node2D" parent="Player2d2"]
-position = Vector2(1664, 792)
+position = Vector2(1672, 792)
 
 [node name="ResCards" type="Node2D" parent="Player2d2"]
-position = Vector2(1664, 920)
+position = Vector2(1672, 920)
 
 [node name="Habitat" type="Node2D" parent="Player2d2"]
-position = Vector2(1760, 792)
+position = Vector2(1768, 792)
 
 [node name="Knight" type="Node2D" parent="Player2d2"]
-position = Vector2(1856, 792)
+position = Vector2(1864, 792)
+
+[node name="LibraryStart" type="Node2D" parent="Player2d2"]
+position = Vector2(1560, 920)
+
+[node name="UniversityStart" type="Node2D" parent="Player2d2"]
+position = Vector2(1560, 888)
+
+[node name="ChurchStart" type="Node2D" parent="Player2d2"]
+position = Vector2(1560, 856)
+
+[node name="CastleStart" type="Node2D" parent="Player2d2"]
+position = Vector2(1560, 824)
+
+[node name="CityHallStart" type="Node2D" parent="Player2d2"]
+position = Vector2(1560, 792)
+
+[node name="TradersGuild" type="Node2D" parent="Player2d2"]
+position = Vector2(1560, 760)
+
+[node name="Player2d3" parent="." node_paths=PackedStringArray("resCardStart", "habitatStart", "roadsStart", "knightStart", "PlayerIconStart", "castleStart", "universityStart", "churchStart", "tradersGuildStart", "cityHallStart", "libraryStart") instance=ExtResource("3_6pgo2")]
+position = Vector2(0, -250)
+resCardStart = NodePath("ResCards")
+habitatStart = NodePath("Habitat")
+roadsStart = NodePath("Roads")
+knightStart = NodePath("Knight")
+PlayerIconStart = NodePath("PlayerIcon")
+castleStart = NodePath("CastleStart")
+universityStart = NodePath("UniversityStart")
+churchStart = NodePath("ChurchStart")
+tradersGuildStart = NodePath("TradersGuild")
+cityHallStart = NodePath("CityHallStart")
+libraryStart = NodePath("LibraryStart")
+
+[node name="PlayerIcon" type="Node2D" parent="Player2d3"]
+position = Vector2(1448, 864)
+
+[node name="Roads" type="Node2D" parent="Player2d3"]
+position = Vector2(1672, 792)
+
+[node name="ResCards" type="Node2D" parent="Player2d3"]
+position = Vector2(1672, 920)
+
+[node name="Habitat" type="Node2D" parent="Player2d3"]
+position = Vector2(1768, 792)
+
+[node name="Knight" type="Node2D" parent="Player2d3"]
+position = Vector2(1864, 792)
+
+[node name="LibraryStart" type="Node2D" parent="Player2d3"]
+position = Vector2(1560, 920)
+
+[node name="UniversityStart" type="Node2D" parent="Player2d3"]
+position = Vector2(1560, 888)
+
+[node name="ChurchStart" type="Node2D" parent="Player2d3"]
+position = Vector2(1560, 856)
+
+[node name="CastleStart" type="Node2D" parent="Player2d3"]
+position = Vector2(1560, 824)
+
+[node name="CityHallStart" type="Node2D" parent="Player2d3"]
+position = Vector2(1560, 792)
+
+[node name="TradersGuild" type="Node2D" parent="Player2d3"]
+position = Vector2(1560, 760)
+
+[node name="Player2d4" parent="." node_paths=PackedStringArray("resCardStart", "habitatStart", "roadsStart", "knightStart", "PlayerIconStart", "castleStart", "universityStart", "churchStart", "tradersGuildStart", "cityHallStart", "libraryStart") instance=ExtResource("3_6pgo2")]
+position = Vector2(0, -500)
+resCardStart = NodePath("ResCards")
+habitatStart = NodePath("Habitat")
+roadsStart = NodePath("Roads")
+knightStart = NodePath("Knight")
+PlayerIconStart = NodePath("PlayerIcon")
+castleStart = NodePath("CastleStart")
+universityStart = NodePath("UniversityStart")
+churchStart = NodePath("ChurchStart")
+tradersGuildStart = NodePath("TradersGuild")
+cityHallStart = NodePath("CityHallStart")
+libraryStart = NodePath("LibraryStart")
+
+[node name="PlayerIcon" type="Node2D" parent="Player2d4"]
+position = Vector2(1448, 864)
+
+[node name="Roads" type="Node2D" parent="Player2d4"]
+position = Vector2(1672, 792)
+
+[node name="ResCards" type="Node2D" parent="Player2d4"]
+position = Vector2(1672, 920)
+
+[node name="Habitat" type="Node2D" parent="Player2d4"]
+position = Vector2(1768, 792)
+
+[node name="Knight" type="Node2D" parent="Player2d4"]
+position = Vector2(1864, 792)
+
+[node name="LibraryStart" type="Node2D" parent="Player2d4"]
+position = Vector2(1560, 920)
+
+[node name="UniversityStart" type="Node2D" parent="Player2d4"]
+position = Vector2(1560, 888)
+
+[node name="ChurchStart" type="Node2D" parent="Player2d4"]
+position = Vector2(1560, 856)
+
+[node name="CastleStart" type="Node2D" parent="Player2d4"]
+position = Vector2(1560, 824)
+
+[node name="CityHallStart" type="Node2D" parent="Player2d4"]
+position = Vector2(1560, 792)
+
+[node name="TradersGuild" type="Node2D" parent="Player2d4"]
+position = Vector2(1560, 760)
 
 [connection signal="button_down" from="CanvasLayer/InteractionPanel/ConnectionInterface/ConnectButton" to="." method="OnConnectBtnDown"]
 [connection signal="button_down" from="CanvasLayer/InteractionPanel/ConnectionInterface/StartGameButton" to="." method="OnStartGameBtnDown"]

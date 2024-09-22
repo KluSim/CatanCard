@@ -114,7 +114,7 @@ public partial class Main : Node2D
 	[Export]
 	private RichTextLabel textField;
 	[Export]
-	private TextEdit textEdit;
+	private RichTextLabel LogTextEdit;
 
 	private List<Card> marketCards;
 	private List<Card> playerIcons;
@@ -190,10 +190,16 @@ public partial class Main : Node2D
 					otherPlayers[count].setPlayerName(currPlayerName);
 					otherPlayers[count].setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
 					otherPlayers[count].SetUnknownRes(Int32.Parse(sr.players[i].numOfCards));
-					//otherPlayers[count].setExpansions(new ExpansionCardAmnts(sr.players[i].yourExpansions));
+					otherPlayers[count].setExpansions(new ExpansionCardAmnts(sr.players[i].yourExpansions));
 					Card c = otherPlayers[count].SetPlayerIcon(Int32.Parse(sr.players[i].iconIndex));
 					if(c != null) playerIcons.Add(c);
 					count++;
+				}
+				
+				//log
+				if(sr.logthing != null && sr.logthing != ""){
+					LogTextEdit.Text += sr.logthing + "\n";
+					//LogTextEdit.SetVScroll(float.PositiveInfinity);
 				}
 			}
 			
@@ -234,20 +240,6 @@ public partial class Main : Node2D
 	
 	[Export]
 	Node2D marketStart;
-
-	private void OnTextEditSet(){
-		string curText = textEdit.Text;
-		if(curText.Length < 1) return;
-		char last = curText[^1];
-		if(last != '\n') return;
-		string cmd = curText[0..^1];
-		textEdit.Text = "";
-		textField.Text+= "send cmd: "+cmd;
-		/*if(cmd == "add"){
-			testPlayer.AddRes(RessourceCard.Clay);
-		}*/
-		client.SendMessage(cmd);
-	}
 	
 	// Market trade functions and vars
 	
