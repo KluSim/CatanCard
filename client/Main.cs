@@ -124,6 +124,7 @@ public partial class Main : Node2D
 	[Export] public Player[] otherPlayers;
 	[Export]
 	PackedScene card;
+	[Export] Sprite2D räuber;
 
 	public bool isRäubering = false;
 	
@@ -150,9 +151,7 @@ public partial class Main : Node2D
 				}
 
 				//market
-				foreach(Card c in marketCards){
-					c.QueueFree();
-				}
+				foreach(Card c in marketCards) c.QueueFree();
 				marketCards.Clear();
 				Schriftrolle sr = serverMessage.schriftrolle;
 				RessourceCardAmnts marketCardsAmnts = new RessourceCardAmnts(sr.markt);
@@ -172,6 +171,7 @@ public partial class Main : Node2D
 
 				//rb
 				isRäubering = sr.räuberCollecting == "true";
+				räuber.SetVisible(isRäubering);
 
 				//player
 				int count = 0;
@@ -185,6 +185,7 @@ public partial class Main : Node2D
 						MainPlayer.setExpansions(new ExpansionCardAmnts(sr.players[i].yourExpansions));
 						MainPlayer.setPlayerName(currPlayerName);
 						MainPlayer.setBuildings(new BuildingCardAmnts(sr.players[i].yourBuildings));
+						if(i == 0) AdminButton.Show();
 						continue;
 					}
 					otherPlayers[count].setPlayerName(currPlayerName);
@@ -192,7 +193,10 @@ public partial class Main : Node2D
 					otherPlayers[count].SetUnknownRes(Int32.Parse(sr.players[i].numOfCards));
 					otherPlayers[count].setExpansions(new ExpansionCardAmnts(sr.players[i].yourExpansions));
 					Card c = otherPlayers[count].SetPlayerIcon(Int32.Parse(sr.players[i].iconIndex));
-					if(c != null) playerIcons.Add(c);
+					c.SetIsTurn(sr.currentTurnPlayer == currPlayerName);
+					if(!playerIcons.Contains(c)){
+						playerIcons.Add(c); 
+					}
 					count++;
 				}
 				
@@ -230,6 +234,32 @@ public partial class Main : Node2D
 				}
 				
 				isPlayerLibraryTrading++;
+			}
+			
+			if(serverMessage.kind == "thisistheend"){
+				ConnectionInterface.Show();
+				MainPlayer.GeneralBack();
+				GameInterface.Hide();
+				
+				// Janky deletion of everything
+				foreach(Card c in marketCards) c.QueueFree();
+				marketCards.Clear();
+				räuber.SetVisible(true);
+				
+				MainPlayer.SetRes(new RessourceCardAmnts());
+				MainPlayer.setExpansions(new ExpansionCardAmnts());
+				MainPlayer.setBuildings(new BuildingCardAmnts());
+				
+				foreach(Player p in otherPlayers){
+					p.setBuildings(new BuildingCardAmnts());
+					p.SetUnknownRes(0);
+					p.setExpansions(new ExpansionCardAmnts());
+				}
+				
+				foreach(Card c in playerIcons) c.QueueFree();
+				playerIcons.Clear();
+				
+				
 			}
 		}
 	}
@@ -401,4 +431,7 @@ public partial class Main : Node2D
 		ConnectionInterface.Hide();
 		GameInterface.Show();
 	}
+	
+	// ADMIN BUTTON
+	[Export] Control AdminButton;
 }

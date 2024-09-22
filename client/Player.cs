@@ -39,6 +39,8 @@ public partial class Player : Node2D
 
 	TCPTestClient client;
 	bool showingBuyOptins = false;
+	
+	public Card playerIconCard;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -114,8 +116,9 @@ public partial class Player : Node2D
 	}
 	
 	public Card SetPlayerIcon(int i){
-		if(iconHasBeenSpawned) return null;
+		if(iconHasBeenSpawned) return playerIconCard;
 		Card cardInstance = card.Instantiate<Card>();
+		playerIconCard = cardInstance;
 		cardInstance.isSelectable = true; 
 		AddChild(cardInstance);
 		cardInstance.setPlayer(this);
@@ -207,12 +210,14 @@ public partial class Player : Node2D
 	[Export] Control TradeInterface;
 	[Export] Control BuyInterface;
 	[Export] Control ExpansionInterface;
+	[Export] Control AdminInterface;
 	
-	public void GeneralBack(){ GameInterface.Show(); TradeInterface.Hide(); BuyInterface.Hide(); }
+	public void GeneralBack(){ GameInterface.Show(); TradeInterface.Hide(); BuyInterface.Hide(); AdminInterface.Hide(); }
 	
 	public void BuyButton(){ GameInterface.Hide(); BuyInterface.Show(); }
 	public void TradeButton(){ GameInterface.Hide(); TradeInterface.Show(); }
 	public void EndTurnButton(){ client.SendMessage("EndTurn|"); }
+	public void AdminButton(){ GameInterface.Hide(); AdminInterface.Show(); }
 	
 	public void BuyStreetButton(){ buySelectedCallback("Street", false); }
 	public void BuyVillageButton(){ buySelectedCallback("Village", false); }
@@ -227,4 +232,7 @@ public partial class Player : Node2D
 	public void BuyTradersGuildButton(){ buySelectedCallback("TradersGuild", true); }
 	public void BuyCityHallButton(){ buySelectedCallback("CityHall", true); }
 	public void ExpansionBackButton(){ ExpansionInterface.Hide(); BuyInterface.Show(); }
+	
+	public void StopServerButton(){ client.SendMessage("KillServer|"); }
+	public void ResetGameButton(){ client.SendMessage("RestartGame|"); }
 }

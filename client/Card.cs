@@ -12,6 +12,8 @@ public partial class Card : Node2D
 	[Export]
 	TextureRect victorypoint;
 	[Export]
+	TextureRect turnoutline;
+	[Export]
 	Texture2D wood;
 	[Export]
 	Texture2D clay;
@@ -98,6 +100,11 @@ public partial class Card : Node2D
 				type = "Wheat";
 				break;
 		}
+	}
+	
+	public void SetIsTurn(bool b){
+		if(b) turnoutline.Show();
+		else turnoutline.Hide();
 	}
 	
 	public void SetExpansionType(CityExpansion ec){

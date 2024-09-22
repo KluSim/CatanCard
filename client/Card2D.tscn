@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://wk6olypje462"]
+[gd_scene load_steps=23 format=3 uid="uid://wk6olypje462"]
 
 [ext_resource type="Script" path="res://Card.cs" id="1_oxb0f"]
 [ext_resource type="Texture2D" uid="uid://duhbg3kcqd8uk" path="res://Mats/wood.png" id="2_08lo8"]
@@ -21,12 +21,14 @@
 [ext_resource type="Texture2D" uid="uid://dlcvk367x31q4" path="res://Mats/PlayerIcon2.png" id="14_rj3by"]
 [ext_resource type="Texture2D" uid="uid://cw808se74p7ul" path="res://Mats/PlayerIcon3.png" id="15_j1mxa"]
 [ext_resource type="Texture2D" uid="uid://cnrp67b331b66" path="res://Mats/PlayerIcon4.png" id="16_dhvj4"]
+[ext_resource type="Texture2D" uid="uid://bqsdc78dh7qae" path="res://Mats/TurnOutline.png" id="22_hixku"]
 
-[node name="Card2d" type="Node2D" node_paths=PackedStringArray("textureSlot", "outline", "victorypoint")]
+[node name="Card2d" type="Node2D" node_paths=PackedStringArray("textureSlot", "outline", "victorypoint", "turnoutline")]
 script = ExtResource("1_oxb0f")
 textureSlot = NodePath("movit/tex")
 outline = NodePath("movit/outline")
 victorypoint = NodePath("movit/victory")
+turnoutline = NodePath("movit/turnoutline")
 wood = ExtResource("2_08lo8")
 clay = ExtResource("3_rdhsc")
 iron = ExtResource("4_kax1u")
@@ -73,3 +75,10 @@ anchor_bottom = 1.013
 offset_right = -4.00001
 offset_bottom = -1.95
 texture = ExtResource("13_a3ht5")
+
+[node name="turnoutline" type="TextureRect" parent="movit"]
+visible = false
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("22_hixku")
