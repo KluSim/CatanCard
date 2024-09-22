@@ -124,6 +124,8 @@ public partial class Main : Node2D
 	[Export] public Player[] otherPlayers;
 	[Export]
 	PackedScene card;
+
+	public bool isRäubering = false;
 	
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -146,7 +148,7 @@ public partial class Main : Node2D
 					ConnectionInterface.Hide();
 					GameInterface.Show();
 				}
-				
+
 				//market
 				foreach(Card c in marketCards){
 					c.QueueFree();
@@ -167,6 +169,9 @@ public partial class Main : Node2D
 						cardInstance.SetTypeRc(r);
 					}
 				}
+
+				//rb
+				isRäubering = sr.räuberCollecting == "true";
 
 				//player
 				int count = 0;
@@ -356,6 +361,11 @@ public partial class Main : Node2D
 	}
 	
 	public void playerResSelectedCallback(string type){
+		if(isRäubering){
+			client.SendMessage("Räubergabe|"+type);
+			return;
+		}
+
 		if(isTradingMarket == 2){
 			client.SendMessage("EndMarketTrade|"+type);
 			marketBtn.Text = "Trade with Market";
