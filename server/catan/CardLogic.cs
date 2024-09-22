@@ -283,6 +283,7 @@ namespace shared
         public string[] leftBuys {get; set;}//list of ints
         public string yourRes {get; set;}
         public string räuberCollecting {get;set;}
+        public string logthing{get;set;}
         public PlayerInformation[] players {get; set;}
     }
 

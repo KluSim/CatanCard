@@ -298,18 +298,19 @@ namespace catan{
 
         public bool hasPlayersOver7Cards(){
             foreach(PlayerState p in players){
-                if(p.getRes().total >= 7) return true;
+                if(p.getRes().total > 7) return true;
             }
             return false;
         }
 
-        public void ActionExecutor(string action, string[] parameters){
+        public string  ActionExecutor(string action, string[] parameters, PlayerState whoSentThis){
             PlayerState current = players[currentTurnPlayer];
-            if(playerTradingAction == 3 && action != "PlayerSelectLib") return;
-            if(playerTradingAction == 1 && action != "EndPlayerSteal") return;
+            if(playerTradingAction == 3 && action != "PlayerSelectLib") return "";
+            if(playerTradingAction == 1 && action != "EndPlayerSteal") return "";
+            if(räuberCollecting && action != "Räubergabe") return "";
             switch(action){
                 case "StartGame":
-                    if(gameStarted) break;
+                    if(gameStarted) return "";
                     init();
                     for(int i = 0; i < numberOfPlayers; i++){
                         RessourceCardAmnts initCards = new RessourceCardAmnts();
@@ -319,23 +320,24 @@ namespace catan{
                         players[i].init(initCards);
                     }
                     gameStarted = true;
-                    break;
+                    return "Game Started!";
                 case "EndTurn":
-                    if(playerTradingAction != 0) break;
+                    if(playerTradingAction != 0) return "";
                     RessourceCardAmnts drawncards = new RessourceCardAmnts();
                     for(int i = 0; i < current.getDrawCards(); ++i){
                         RessourceCard? c = drawPile.takeRandomRes();
                         if(c != null) drawncards.correspondingAmnt(c.Value) += 1;
                     }
 
-                    if(current.endTurn(drawncards)) break; //TODO END GAME
+                    if(current.endTurn(drawncards)) return "Game Ended"; //TODO END GAME
 
                     currentTurnPlayer++;
                     if(currentTurnPlayer >= players.Count) currentTurnPlayer = 0;
                     players[currentTurnPlayer].startTurn();
 
-                    break;
+                    return current.playerName+" ended their turn";
                 case "Buy":
+                    if(parameters.Length < 1) return "";
                     string thing = parameters[0];
                     BuildingCard buything = BuildingCard.Expansion;
                     CityExpansion? expthing = null;
@@ -415,61 +417,59 @@ namespace catan{
                                 swapMarket();
                             }
                             //räuber
-                            else{
-                                if(!hasPlayersOver7Cards()) break;
+                            else if(hasPlayersOver7Cards()) 
                                 räuberCollecting = true; 
-                            }
                         }
                     }
 
-                    break;
+                    return current.playerName+" bought a "+BuildingCardMths.toString(buything);
                 case "Räubergabe":
-                    if(current.getRes().total <= 7) break;
-                    if(parameters.Length < 1) break;
+                    if(whoSentThis.getRes().total <= 7) return "";
+                    if(parameters.Length < 1) return "";
                     RessourceCard giveAway = RessourceCardMths.toEnum(parameters[0]);
-                    current.resCards.correspondingAmnt(giveAway)--;
+                    whoSentThis.resCards.correspondingAmnt(giveAway)--;
                     drawPile.correspondingAmnt(giveAway)++;
                     if(!hasPlayersOver7Cards()) räuberCollecting = false;
-                    break;
+                    return whoSentThis.playerName+" got stuff stolen";
                 case "StartPlayerSteal":
-                    if(playerTradingAction != 0) break;
+                    if(playerTradingAction != 0) return "";
                     targetPlayer = players.FindIndex(player  => player.playerName == parameters[0]);
-                    if(targetPlayer == -1) break;
-                    if(targetPlayer == currentTurnPlayer) break;
+                    if(targetPlayer == -1) return "";
+                    if(targetPlayer == currentTurnPlayer) return "";
                     if(current.startPlayerSteal(players[targetPlayer])) playerTradingAction = 1;
-                    break;
+                    return "";
                 case "EndPlayerSteal":
-                    if(playerTradingAction != 1) break;
+                    if(playerTradingAction != 1) return "";
                     if(current.endPlayerSteal(players[targetPlayer], RessourceCardMths.toEnum(parameters[0]))) playerTradingAction = 0;
-                    break;
+                    return current.playerName+" exchanged cards with "+players[targetPlayer].playerName;
                 case "StartMarketTrade":
-                    if(playerTradingAction != 0) break;
+                    if(playerTradingAction != 0) return "";
                     if(current.startMarketTrade(market, RessourceCardMths.toEnum(parameters[0]))) playerTradingAction = 2;
-                    break;
+                    return "";
                 case "EndMarketTrade":
                     if(playerTradingAction != 2) break;
                     if(current.endMarketTrade(market, RessourceCardMths.toEnum(parameters[0]))) playerTradingAction = 0;
-                    break;
+                    return current.playerName+" exchanged cards with the market";
                 case "PlayerStealGuild":
-                    if(parameters.Length < 1) break;
-                    if(current.availableTrades <= 0) break;
-                    if(current.getExpansions().correspondingAmnt(CityExpansion.TradersGuild) <= 0) break;
+                    if(parameters.Length < 1) return "";
+                    if(current.availableTrades <= 0) return "";
+                    if(current.getExpansions().correspondingAmnt(CityExpansion.TradersGuild) <= 0) return "";
                     int stealethPlayerIndex = players.FindIndex(player  => player.playerName == parameters[0]);
-                    if(stealethPlayerIndex == -1) break;
-                    if(stealethPlayerIndex >= players.Count) break;
+                    if(stealethPlayerIndex == -1) return "";
+                    if(stealethPlayerIndex >= players.Count) return "";
                     PlayerState stealethPlayer = players[stealethPlayerIndex];
-                    if(stealethPlayer.calculateVictoryPoints() < current.calculateVictoryPoints()) break;
+                    if(stealethPlayer.calculateVictoryPoints() < current.calculateVictoryPoints()) return "";
                     RessourceCard? stolenCard = stealethPlayer.resCards.takeRandomRes();
-                    if(stolenCard == null) break;
+                    if(stolenCard == null) return "";
                     current.resCards.correspondingAmnt(stolenCard.Value)++;
                     current.availableTrades--;
-                    break;
+                    return current.playerName+" stole a card from "+stealethPlayer.playerName;
                 case "PlayerTradeLib":
-                    if(parameters.Length < 1) break;
-                    if(current.availableTrades <= 0) break;
+                    if(parameters.Length < 1) return "";
+                    if(current.availableTrades <= 0) return "";
                     targetPlayer = players.FindIndex(player  => player.playerName == parameters[0]);
-                    if(targetPlayer == -1) break;
-                    if(targetPlayer >= players.Count) break;
+                    if(targetPlayer == -1) return "";
+                    if(targetPlayer >= players.Count) return "";
                     PlayerState tradethPlayer = players[targetPlayer];
                     Schriftrolle sr = new Schriftrolle();
                     sr.yourRes = tradethPlayer.resCards.stringify();
@@ -478,7 +478,7 @@ namespace catan{
                     string jsonString = JsonSerializer.Serialize(toClient.decode());
                     playerTradingAction = 3;
                     current.stream.WriteAsync(Encoding.ASCII.GetBytes(jsonString));
-                    break;
+                    return "";
                 case "PlayerSelectLib":
                     if(parameters.Length < 1) break;
                     RessourceCard rc = RessourceCardMths.toEnum(parameters[0]);
@@ -487,11 +487,9 @@ namespace catan{
                     tradethPlayer2.resCards.correspondingAmnt(rc)--;
                     current.resCards.correspondingAmnt(rc)++;
                     playerTradingAction = 1;
-                    break;
-                //current.startTurn();
-                // player builds shit (player actions)
-                
+                    return current.playerName+" did a knowledgable trade with "+tradethPlayer2.playerName;
             }
+            return "";
         }
 
         public int connectant(NetworkStream stream, ClientToServer msg){
@@ -544,11 +542,12 @@ namespace catan{
                 break;
             }
 
-            ActionExecutor(splited[0], parameters);
+            string whathappened = ActionExecutor(splited[0], parameters, players[playerIndex]);
 
             Console.WriteLine(msg.playerName+": "+msg.msg);
-            for(int i = 0; i < numberOfPlayers; ++i){
+            for(int i = 0; i < numberOfPlayers; ++i){   
                 ServerToClient toClient = new ServerToClient(stateToSend(i), splited[0] == "StartGame");
+                toClient.schriftrolle.logthing = whathappened;
                 string jsonString = JsonSerializer.Serialize(toClient.decode());
                 Console.WriteLine(jsonString);
                 players[i].stream.WriteAsync(Encoding.ASCII.GetBytes(jsonString));
