@@ -329,7 +329,7 @@ namespace catan{
                         if(c != null) drawncards.correspondingAmnt(c.Value) += 1;
                     }
 
-                    if(current.endTurn(drawncards)) return "Game Ended"; //TODO END GAME
+                    if(current.endTurn(drawncards)) return "Game Ended, "+ current.playerName+" won"; //TODO END GAME
 
                     currentTurnPlayer++;
                     if(currentTurnPlayer >= players.Count) currentTurnPlayer = 0;
@@ -359,7 +359,7 @@ namespace catan{
                             buything = BuildingCard.Knight;
                             break;
                     }
-                    if(buildingPile.correspondingAmnt(buything) <= 0 && buything != BuildingCard.Street && buything != BuildingCard.Knight) break;
+                    if(buildingPile.correspondingAmnt(buything) <= 0 && buything != BuildingCard.Street && buything != BuildingCard.Knight) return "";
 
                     RessourceCardAmnts proposed = new RessourceCardAmnts();
                     int add = expthing == null ? 0 : 1;
@@ -368,61 +368,65 @@ namespace catan{
                         proposed.correspondingAmnt(curCard)++;
                     }
 
-                    if(current.buyBuilding(buything, proposed, expthing)) {
-                        buildingPile.correspondingAmnt(buything)--;
-                        bool stolen = false;
-                        int stolenPlayer = currentTurnPlayer;
-                        //steal street if none available
-                        if(buything == BuildingCard.Street && buildingPile.correspondingAmnt(buything) < 0){
-                            while(!stolen){
-                                if(CardOfFate) stolenPlayer++;
-                                else stolenPlayer--;
+                    if(!current.buyBuilding(buything, proposed, expthing)) 
+                        return "";
+                    
+                    buildingPile.correspondingAmnt(buything)--;
+                    bool stolen = false;
+                    int stolenPlayer = currentTurnPlayer;
+                    //steal street if none available
+                    if(buything == BuildingCard.Street && buildingPile.correspondingAmnt(buything) < 0){
+                        while(!stolen){
+                            if(CardOfFate) stolenPlayer++;
+                            else stolenPlayer--;
 
-                                if(stolenPlayer < 0) stolenPlayer = players.Count;
-                                if(stolenPlayer >= players.Count) stolenPlayer = 0;
+                            if(stolenPlayer < 0) stolenPlayer = players.Count;
+                            if(stolenPlayer >= players.Count) stolenPlayer = 0;
 
-                                int stolenThreshold = 0;
-                                if(players[stolenPlayer].getExpansions().castle > 0) stolenThreshold = 3; 
+                            int stolenThreshold = 0;
+                            if(players[stolenPlayer].getExpansions().castle > 0) stolenThreshold = 3; 
 
-                                if(players[stolenPlayer].getBuildings().street > stolenThreshold){
-                                    players[stolenPlayer].getBuildings().street--;
-                                    stolen = true;
-                                }
+                            if(players[stolenPlayer].getBuildings().street > stolenThreshold){
+                                players[stolenPlayer].getBuildings().street--;
+                                stolen = true;
                             }
-                        }
-                        //steal knight if none available
-                        if(buything == BuildingCard.Knight && buildingPile.correspondingAmnt(buything) < 0){
-                            while(!stolen){
-                                if(CardOfFate) stolenPlayer++;
-                                else stolenPlayer--;
-
-                                if(stolenPlayer < 0) stolenPlayer = players.Count;
-                                if(stolenPlayer >= players.Count) stolenPlayer = 0;
-
-                                int stolenThreshold = 0;
-                                if(players[stolenPlayer].getExpansions().church > 0) stolenThreshold = 1; 
-
-                                if(players[stolenPlayer].getBuildings().knight > stolenThreshold){
-                                    players[stolenPlayer].getBuildings().knight--;
-                                    stolen = true;
-                                }
-                            }
-                        }
-                        if(buything == BuildingCard.City){
-                            //50/50 city effect
-                            Random r = new Random();
-                            Int64 a = r.NextInt64(2);
-                            //swap market
-                            if(a == 0){
-                                swapMarket();
-                            }
-                            //räuber
-                            else if(hasPlayersOver7Cards()) 
-                                räuberCollecting = true; 
                         }
                     }
+                    //steal knight if none available
+                    if(buything == BuildingCard.Knight && buildingPile.correspondingAmnt(buything) < 0){
+                        while(!stolen){
+                            if(CardOfFate) stolenPlayer++;
+                            else stolenPlayer--;
 
-                    return current.playerName+" bought a "+BuildingCardMths.toString(buything);
+                            if(stolenPlayer < 0) stolenPlayer = players.Count;
+                            if(stolenPlayer >= players.Count) stolenPlayer = 0;
+
+                            int stolenThreshold = 0;
+                            if(players[stolenPlayer].getExpansions().church > 0) stolenThreshold = 1; 
+
+                            if(players[stolenPlayer].getBuildings().knight > stolenThreshold){
+                                players[stolenPlayer].getBuildings().knight--;
+                                stolen = true;
+                            }
+                        }
+                    }
+                    string extra = "";
+                    if(buything == BuildingCard.City){
+                        //50/50 city effect
+                        Random r = new Random();
+                        Int64 a = r.NextInt64(2);
+                        //swap market
+                        if(a == 0){
+                            swapMarket();
+                            extra = "The martket was swapped";
+                        }
+                        //räuber
+                        else if(hasPlayersOver7Cards()) {
+                            räuberCollecting = true; 
+                            extra = "bandits are ravaging the rich";
+                        }
+                    }
+                    return current.playerName+" bought a "+BuildingCardMths.toString(buything)+"\n"+extra;
                 case "Räubergabe":
                     if(whoSentThis.getRes().total <= 7) return "";
                     if(parameters.Length < 1) return "";
