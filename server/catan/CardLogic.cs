@@ -284,6 +284,7 @@ namespace shared
         public string yourRes {get; set;}
         public string räuberCollecting {get;set;}
         public string logthing{get;set;}
+        public string currentTurnPlayer{get;set;}
         public PlayerInformation[] players {get; set;}
     }
 
