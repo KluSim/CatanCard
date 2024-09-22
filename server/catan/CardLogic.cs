@@ -282,7 +282,7 @@ namespace shared
         public string expansions {get; set;}
         public string[] leftBuys {get; set;}//list of ints
         public string yourRes {get; set;}
-        
+        public string räuberCollecting {get;set;}
         public PlayerInformation[] players {get; set;}
     }
 

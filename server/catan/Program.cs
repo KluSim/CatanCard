@@ -227,6 +227,7 @@ namespace catan{
         ExpansionCardAmnts expansionPile;
         bool CardOfFate = true;
         RessourceCardAmnts market;
+        bool räuberCollecting = false;
 
 
         public ServerState(){
@@ -236,7 +237,7 @@ namespace catan{
         public Schriftrolle stateToSend(int player){
             Schriftrolle sr = new Schriftrolle();
             sr.markt = market.stringify();
-
+            sr.räuberCollecting = räuberCollecting ? "true" : "false";
             sr.destiny = CardOfFate ? "Clock" : "Counterclock";
 
             sr.expansions = expansionPile.stringify();
@@ -287,6 +288,19 @@ namespace catan{
 
             market = new RessourceCardAmnts();
             for(int i = 0; i < 5; ++i) market.correspondingAmnt(drawPile.takeRandomRes().Value) += 1;
+        }
+
+        public void swapMarket(){
+            drawPile.add(market);
+            market = new RessourceCardAmnts();
+            for(int i = 0; i < 5; ++i) market.correspondingAmnt(drawPile.takeRandomRes().Value) += 1;
+        }
+
+        public bool hasPlayersOver7Cards(){
+            foreach(PlayerState p in players){
+                if(p.getRes().total >= 7) return true;
+            }
+            return false;
         }
 
         public void ActionExecutor(string action, string[] parameters){
@@ -392,8 +406,30 @@ namespace catan{
                                 }
                             }
                         }
+                        if(buything == BuildingCard.City){
+                            //50/50 city effect
+                            Random r = new Random();
+                            Int64 a = r.NextInt64(2);
+                            //swap market
+                            if(a == 0){
+                                swapMarket();
+                            }
+                            //räuber
+                            else{
+                                if(!hasPlayersOver7Cards()) break;
+                                räuberCollecting = true; 
+                            }
+                        }
                     }
 
+                    break;
+                case "Räubergabe":
+                    if(current.getRes().total <= 7) break;
+                    if(parameters.Length < 1) break;
+                    RessourceCard giveAway = RessourceCardMths.toEnum(parameters[0]);
+                    current.resCards.correspondingAmnt(giveAway)--;
+                    drawPile.correspondingAmnt(giveAway)++;
+                    if(!hasPlayersOver7Cards()) räuberCollecting = false;
                     break;
                 case "StartPlayerSteal":
                     if(playerTradingAction != 0) break;
@@ -501,8 +537,12 @@ namespace catan{
             string[] splited = msg.msg.Split('|');
             string[] parameters = splited[1].Split(',');
 
-            if(players[currentTurnPlayer].playerName != msg.playerName)
-                if (!(playerIndex == 0 && adminCommands.Contains(splited[0]))) return;
+            while(true){
+                if(räuberCollecting && splited[0] == "Räubergabe") break;
+                if(players[currentTurnPlayer].playerName != msg.playerName)
+                    if (!(playerIndex == 0 && adminCommands.Contains(splited[0]))) return;            
+                break;
+            }
 
             ActionExecutor(splited[0], parameters);
 
