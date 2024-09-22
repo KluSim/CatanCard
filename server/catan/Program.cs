@@ -675,11 +675,13 @@ namespace catan{
                     }
                     }
                     catch(InvalidOperationException ioe){
+                        if(gameInstances.ContainsKey(theGameId))
                         if(theStream!=null)gameInstances[theGameId].playerDisconnected(theStream);
                         return;
                         //gameInstances = new Dictionary<int, ServerState>();
                     }
                     catch(IOException ioe){
+                        if(gameInstances.ContainsKey(theGameId))
                         if(theStream!=null)gameInstances[theGameId].playerDisconnected(theStream);
                         return;
                         //gameInstances = new Dictionary<int, ServerState>();
