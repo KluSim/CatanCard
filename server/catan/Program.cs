@@ -239,7 +239,7 @@ namespace catan{
             sr.markt = market.stringify();
             sr.räuberCollecting = räuberCollecting ? "true" : "false";
             sr.destiny = CardOfFate ? "Clock" : "Counterclock";
-
+            sr.currentTurnPlayer = players[currentTurnPlayer].playerName;
             sr.expansions = expansionPile.stringify();
 
             sr.leftBuys = new string[4];
@@ -335,7 +335,7 @@ namespace catan{
                     if(currentTurnPlayer >= players.Count) currentTurnPlayer = 0;
                     players[currentTurnPlayer].startTurn();
 
-                    return current.playerName+" ended their turn";
+                    return current.playerName+" ended their turn\nIt is now "+players[currentTurnPlayer].playerName+"'s turn";
                 case "Buy":
                     if(parameters.Length < 1) return "";
                     string thing = parameters[0];
