@@ -209,6 +209,8 @@ namespace shared
             }
         }
 
+        public ExpansionCardAmnts(){}
+
         public ExpansionCardAmnts(int li, int tr, int ch, int ci, int ca, int un) {
             library = li; tradersGuild = tr; church = ch; cityHall = ci; castle = ca; university = un;
         }
@@ -249,6 +251,7 @@ namespace shared
                 return village+city+knight+expansion+street;
             }
         }
+        public BuildingCardAmnts(){}
         public BuildingCardAmnts(int v, int c, int k, int e, int s){
             village = v; city = c; knight = k; expansion = e; street = s;
         }

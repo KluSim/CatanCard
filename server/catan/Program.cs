@@ -8,6 +8,7 @@ using System.Text.Encodings;
 using System.Text;
 using System.Net.NetworkInformation;
 using shared;
+using Microsoft.VisualBasic.FileIO;
 
 namespace catan{
 
@@ -215,7 +216,7 @@ namespace catan{
     
 
     class ServerState {
-        string[] adminCommands = {"StartGame"};
+        string[] adminCommands = {"StartGame", "RestartGame", "KillServer"};
         List<PlayerState> players;
         int numberOfPlayers = 0;
         bool gameStarted = false;
@@ -228,10 +229,13 @@ namespace catan{
         bool CardOfFate = true;
         RessourceCardAmnts market;
         bool räuberCollecting = false;
+        Dictionary<int, ServerState> allGames;
+        int gameid;
 
-
-        public ServerState(){
+        public ServerState(Dictionary<int, ServerState> ag, int thisgameid){
             players = new List<PlayerState>();
+            allGames = ag;
+            gameid = thisgameid;
         }
 
         public Schriftrolle stateToSend(int player){
@@ -277,6 +281,7 @@ namespace catan{
         public void init(){
             if(numberOfPlayers < 2 || numberOfPlayers > 4) Console.WriteLine("replace me with actual error handling. if you read this, haha your code does the big stupid");
             currentTurnPlayer = 0;
+            playerTradingAction = 0;
 
             buildingPile = new BuildingCardAmnts(10,10,10,10,10);
             expansionPile = new ExpansionCardAmnts(0,0,0,0,0,0); //TODO expansion amounts for n players is wrong, check with actual game
@@ -302,6 +307,15 @@ namespace catan{
             }
             return false;
         }
+        public void initPlayers(){
+            for(int i = 0; i < numberOfPlayers; i++){
+                RessourceCardAmnts initCards = new RessourceCardAmnts();
+                initCards.correspondingAmnt(drawPile.takeRandomRes().Value)++;
+                initCards.correspondingAmnt(drawPile.takeRandomRes().Value)++;
+                initCards.correspondingAmnt(drawPile.takeRandomRes().Value)++;
+                players[i].init(initCards);
+            }
+        }
 
         public string  ActionExecutor(string action, string[] parameters, PlayerState whoSentThis){
             PlayerState current = players[currentTurnPlayer];
@@ -309,18 +323,6 @@ namespace catan{
             if(playerTradingAction == 1 && action != "EndPlayerSteal") return "";
             if(räuberCollecting && action != "Räubergabe") return "";
             switch(action){
-                case "StartGame":
-                    if(gameStarted) return "";
-                    init();
-                    for(int i = 0; i < numberOfPlayers; i++){
-                        RessourceCardAmnts initCards = new RessourceCardAmnts();
-                        initCards.correspondingAmnt(drawPile.takeRandomRes().Value)++;
-                        initCards.correspondingAmnt(drawPile.takeRandomRes().Value)++;
-                        initCards.correspondingAmnt(drawPile.takeRandomRes().Value)++;
-                        players[i].init(initCards);
-                    }
-                    gameStarted = true;
-                    return "Game Started!";
                 case "EndTurn":
                     if(playerTradingAction != 0) return "";
                     RessourceCardAmnts drawncards = new RessourceCardAmnts();
@@ -534,15 +536,40 @@ namespace catan{
         }
 
         //Client tells us smth
-        public void inform(ClientToServer msg){
+        public string inform(ClientToServer msg){
             int playerIndex = players.FindIndex(player  => player.playerName == msg.playerName);
             string[] splited = msg.msg.Split('|');
             string[] parameters = splited[1].Split(',');
 
             while(true){
-                if(räuberCollecting && splited[0] == "Räubergabe") break;
-                if(players[currentTurnPlayer].playerName != msg.playerName)
-                    if (!(playerIndex == 0 && adminCommands.Contains(splited[0]))) return;            
+                if(räuberCollecting && splited[0] == "Räubergabe") break;     
+                if(playerIndex == 0 && adminCommands.Contains(splited[0])) {
+                    if(splited[0] == "KillServer") {
+                        ServerToClient toClient = new ServerToClient();
+                        toClient.kind = "thisistheend";
+                        string jsonString = JsonSerializer.Serialize(toClient.decode());
+                        Console.WriteLine("closing game "+gameid);
+                        for(int i = 0; i < numberOfPlayers; ++i) players[i].stream.WriteAsync(Encoding.ASCII.GetBytes(jsonString));
+                        Thread.Sleep(200);
+                        for(int i = 0; i < numberOfPlayers; ++i) players[i].stream.Close();
+                        allGames.Remove(gameid);
+                        return "" ;
+                    }
+                    else if(splited[0] == "RestartGame"){
+                        init();
+                        initPlayers();
+                        gameStarted = true;
+                        break;
+                    }
+                    else if(splited[0] == "StartGame"){
+                        if(gameStarted) return "";
+                        init();
+                        initPlayers();
+                        gameStarted = true;
+                        break;
+                    }
+                }      
+                if(playerIndex != 0 && adminCommands.Contains(splited[0])) return "";
                 break;
             }
 
@@ -556,6 +583,7 @@ namespace catan{
                 Console.WriteLine(jsonString);
                 players[i].stream.WriteAsync(Encoding.ASCII.GetBytes(jsonString));
             }
+            return "";
         }
 
         public void playerDisconnected(NetworkStream stream){
@@ -578,7 +606,7 @@ namespace catan{
             Console.WriteLine("hi i run now");
             gameInstances = new Dictionary<int, ServerState>();
             server = new TcpListener(IPAddress.Any, 8052);
-                server.Start();
+            server.Start();
             server.BeginAcceptTcpClient(handle_connection, server);
             while (true)
             {
@@ -634,13 +662,14 @@ namespace catan{
                             if(theGameId != decoded.game_id) return;//TODO tell player to fuck of
 
                             if(!gameInstances.ContainsKey(decoded.game_id)){
-                                gameInstances[decoded.game_id] = new ServerState();
+                                gameInstances[decoded.game_id] = new ServerState(gameInstances, decoded.game_id);
                             }
                             ServerState thisgame = gameInstances[decoded.game_id];
                             if(firstMsg)
                                 thisgame.connectant(stream, decoded);
-                            else
-                                thisgame.inform(decoded);
+                            else{
+                                string todo = thisgame.inform(decoded);
+                            }
                             firstMsg = false;
                         }  
                     }
